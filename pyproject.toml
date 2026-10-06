@@ -1,7 +1,7 @@
 [project]
 name = "data-project-f1"
 version = "0.1.0"
-description = "Add your description here"
+description = "F1 Data Analysis Dashboard"
 readme = "README.md"
 authors = [
     { name = "Ayan Sarkar", email = "prenom.nom@edu.esiee.fr" }
@@ -15,9 +15,5 @@ dependencies = [
     "requests>=2.34.2",
 ]
 
-[project.scripts]
-data-project-f1 = "data_project_f1:main"
-
-[build-system]
-requires = ["uv_build>=0.12.10,<0.13.0"]
-build-backend = "uv_build"
+[tool.uv]
+package = false
