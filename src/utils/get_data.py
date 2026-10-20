@@ -1,3 +1,5 @@
+import json
+import os
 import time
 import sqlite3
 import pandas as pd
@@ -6,11 +8,15 @@ import config
 
 
 def fetch_raw_data(year: int = 2024) -> pd.DataFrame:
-    """On récupère l'intégralité des résultats bruts d'une saison via Jolpica.
-    Gestion de la pagination ajoutée."""
+    """Récupère les résultats bruts d'une saison via Jolpica,
+    sauvegarde le JSON brut dans data/raw/ et renvoie un DataFrame."""
     url = f"{config.API_BASE}/{year}/results.json"
     offset = 0
+    raw_races = []
     rows = []
+
+    # On s'assure que le dossier data/raw/ existe
+    os.makedirs(config.RAW_DIR, exist_ok=True)
 
     while True:
         response = requests.get(
@@ -23,6 +29,8 @@ def fetch_raw_data(year: int = 2024) -> pd.DataFrame:
         data = response.json()["MRData"]
 
         races = data["RaceTable"]["Races"]
+        raw_races.extend(races)
+
         for race in races:
             circuit = race.get("Circuit", {})
             loc = circuit.get("Location", {})
@@ -53,6 +61,11 @@ def fetch_raw_data(year: int = 2024) -> pd.DataFrame:
             break
         time.sleep(config.PAUSE)
 
+    # Sauvegarde du JSON brut par saison
+    json_path = os.path.join(config.RAW_DIR, f"results_{year}.json")
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(raw_races, f, ensure_ascii=False, indent=2)
+
     return pd.DataFrame(rows)
 
 
@@ -62,6 +75,7 @@ def save_raw_to_sqlite() -> None:
     with sqlite3.connect(config.DB_PATH) as conn:
         df_raw.to_sql("raw", conn, if_exists="replace", index=False)
     print("Table 'raw' créée avec succès dans SQLite.")
+    print("JSON sauvegardé dans data/raw/.")
 
 
 if __name__ == "__main__":
