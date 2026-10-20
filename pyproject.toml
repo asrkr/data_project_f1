@@ -4,16 +4,21 @@ version = "0.1.0"
 description = "F1 Data Analysis Dashboard"
 readme = "README.md"
 authors = [
-    { name = "Ayan Sarkar", email = "prenom.nom@edu.esiee.fr" }
+    { name = "Ayan Sarkar", email = "ayan.sarkar@edu.esiee.fr" },
+    { name = "Prénom Nom", email = "prenom.nom@edu.esiee.fr" },
 ]
 requires-python = ">=3.11"
 dependencies = [
     "dash>=4.4.1",
     "pandas>=3.0.6",
     "plotly>=7.1.0",
-    "pytest>=9.1.1",
     "requests>=2.34.2",
 ]
 
 [tool.uv]
 package = false
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
