@@ -5,7 +5,7 @@ description = "F1 Data Analysis Dashboard"
 readme = "README.md"
 authors = [
     { name = "Ayan Sarkar", email = "ayan.sarkar@edu.esiee.fr" },
-    { name = "Prénom Nom", email = "prenom.nom@edu.esiee.fr" },
+    { name = "Antoine Palliser", email = "antoine.palliser@edu.esiee.fr" },
 ]
 requires-python = ">=3.11"
 dependencies = [
