@@ -245,8 +245,12 @@ dependencies = [
     { name = "dash" },
     { name = "pandas" },
     { name = "plotly" },
-    { name = "pytest" },
     { name = "requests" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
 ]
 
 [package.metadata]
@@ -254,9 +258,11 @@ requires-dist = [
     { name = "dash", specifier = ">=4.4.1" },
     { name = "pandas", specifier = ">=3.0.6" },
     { name = "plotly", specifier = ">=7.1.0" },
-    { name = "pytest", specifier = ">=9.1.1" },
     { name = "requests", specifier = ">=2.34.2" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=9.1.1" }]
 
 [[package]]
 name = "flask"
