@@ -7,76 +7,94 @@ import requests
 import config
 
 
-def fetch_raw_data(year: int = 2024) -> pd.DataFrame:
-    """Récupère les résultats bruts d'une saison via Jolpica,
-    sauvegarde le JSON brut dans data/raw/ et renvoie un DataFrame."""
+def fetch_season_raw(year: int) -> tuple[list[dict], pd.DataFrame]:
+    """Récupère les résultats bruts d'une saison via Jolpica en gérant la pagination."""
     url = f"{config.API_BASE}/{year}/results.json"
     offset = 0
-    raw_races = []
-    rows = []
-
-    # On s'assure que le dossier data/raw/ existe
-    os.makedirs(config.RAW_DIR, exist_ok=True)
+    races_dict = {}
 
     while True:
         response = requests.get(
             url,
-            params={"limit": config.PAGE_LIMIT, "offset": offset},
-            headers=config.HEADERS,
-            timeout=15
+            params = {"limit": config.PAGE_LIMIT, "offset": offset},
+            headers = config.HEADERS,
+            timeout = 15,
         )
         response.raise_for_status()
-        data = response.json()["MRData"]
+        mr_data = response.json()["MRData"]
+        races_list = mr_data["RaceTable"]["Races"]
 
-        races = data["RaceTable"]["Races"]
-        raw_races.extend(races)
-
-        for race in races:
-            circuit = race.get("Circuit", {})
-            loc = circuit.get("Location", {})
-
-            for res in race.get("Results", []):
-                drv = res.get("Driver", {})
-                cons = res.get("Constructor", {})
-                rows.append({
-                    "season": int(race["season"]),
-                    "round": int(race["round"]),
-                    "race_date": race.get("date"),
-                    "circuit_id": circuit.get("circuitId"),
-                    "circuit_name": circuit.get("circuitName"),
-                    "lat": float(loc.get("lat", 0)),
-                    "long": float(loc.get("long", 0)),
-                    "country": loc.get("country"),
-                    "driver_id": drv.get("driverId"),
-                    "driver_name": f"{drv.get('givenName', '')} {drv.get('familyName', '')}".strip(),
-                    "date_of_birth": drv.get("dateOfBirth"),
-                    "constructor_id": cons.get("constructorId"),
-                    "team_name": cons.get("name"),
-                    "position": res.get("position"),
-                    "status": res.get("status"),
-                })
+        for race in races_list:
+            rnd = int(race["round"])
+            if rnd in races_dict:
+                races_dict[rnd].setdefault("Results", []).extend(race.get("Results", []))
+            else:
+                race.setdefault("Results", [])
+                races_dict[rnd] = race
 
         offset += config.PAGE_LIMIT
-        if offset >= int(data["total"]):
+        if offset >= int(mr_data["total"]):
             break
         time.sleep(config.PAUSE)
 
-    # Sauvegarde du JSON brut par saison
-    json_path = os.path.join(config.RAW_DIR, f"results_{year}.json")
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(raw_races, f, ensure_ascii=False, indent=2)
+    all_races = [races_dict[r] for r in sorted(races_dict.keys())]
 
-    return pd.DataFrame(rows)
+    rows = []
+    for race in all_races:
+        circuit = race.get("Circuit", {})
+        loc = circuit.get("Location", {})
+        for res in race.get("Results", []):
+            drv = res.get("Driver", {})
+            cons = res.get("Constructor", {})
+            rows.append({
+                "season": int(race["season"]),
+                "round": int(race["round"]),
+                "race_date": race.get("date"),
+                "circuit_id": race.get("circuitId"),
+                "circuit_name": race.get("circuitName"),
+                "lat": float(loc.get("lat")) if loc.get("lat") else None,
+                "long": float(loc.get("long")) if loc.get("long") else None,
+                "country": loc.get("country"),
+                "driver_id": drv.get("driverId"),
+                "driverName": f"{drv.get('givenName', '')} {drv.get('familyName', '')}".strip(),
+                "date_of_birth": drv.get("dateOfBirth"),
+                "constructor_id": cons.get("constructorId"),
+                "team_name": cons.get("name"),
+                "position": res.get("position"),
+                "grid": res.get("grid"),
+                "status": res.get("status"),
+                "points": res.get("points"),
+            })
+
+    return all_races, pd.DataFrame(rows)
 
 
-def save_raw_to_sqlite() -> None:
-    """Sauvegarde les données brutes dans la table raw de SQLite."""
-    df_raw = fetch_raw_data(2024)
-    with sqlite3.connect(config.DB_PATH) as conn:
-        df_raw.to_sql("raw", conn, if_exists="replace", index=False)
-    print("Table 'raw' créée avec succès dans SQLite.")
-    print("JSON sauvegardé dans data/raw/.")
+def updat_raw_database(start_year: int = config.START_YEAR, end_year: int = config.END_YEAR) -> None:
+    """Parcourt l'ensemble des saisons, sauvegarde les fichiers JSON et remplit la table raw."""
+    os.makedirs(config.RAW_DIR, exist_ok=True)
+    all_dfs = []
+
+    for year in range(start_year, end_year + 1):
+        try:
+            raw_races, df_year = fetch_season_raw(year)
+            if df_year.empty:
+                continue
+
+            json_path = os.path.join(config.RAW_DIR, f"results_{year}.json")
+            with open(json_path, "w", encoding="utf-8") as f:
+                json.dump(raw_races, f, ensure_ascii=False, indent=2)
+
+            all_dfs.append(df_year)
+            print(f"Saison {year} enregistrée.")
+
+        except Exception as e:
+            print(f"Erreur saison {year} : {e}")
+
+    if all_dfs:
+        full_raw_df = pd.concat(all_dfs, ignore_index=True)
+        with sqlite3.connect(config.DB_PATH) as conn:
+            full_raw_df.to_sql("raw", conn, if_exists="replace", index=False)
 
 
 if __name__ == "__main__":
-    save_raw_to_sqlite()
+    updat_raw_database()
