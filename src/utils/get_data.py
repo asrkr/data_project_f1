@@ -7,22 +7,39 @@ import requests
 import config
 
 
+def _get_json(url: str, params: dict | None = None, max_attempts: int = 5) -> dict:
+    """Effectue une requête GET avec retries et gestion explicite du HTTP 429/"""
+    for attempt in range(1, max_attempts + 1):
+        try:
+            r = requests.get(url, params=params, headers=config.HEADERS, timeout=15)
+        except requests.RequestException as e:
+            print(f"Erreur réseau ({e}), tentative {attempt}/{max_attempts}")
+            time.sleep(3 * attempt)
+            continue
+
+        if r.status_code == 200:
+            return r.json()
+
+        if r.status_code == 429:
+            wait = 15 * attempt
+            print(f"Limite de requêtes de l'API atteinte, pause de {wait} s...")
+            time.sleep(wait)
+        else:
+            print(f"HTTP {r.status_code}, tentative {attempt}/{max_attempts}")
+            time.sleep(3 * attempt)
+
+    raise RuntimeError(f"Échec après {max_attempts} tentatives : {url}")
+
+
 def fetch_season_raw(year: int) -> tuple[list[dict], pd.DataFrame]:
-    """Récupère les résultats bruts d'une saison via Jolpica en gérant la pagination."""
+    """Récupère les résultats bruts d'une saison via Jolpica en gérant la pagination et les limites."""
     url = f"{config.API_BASE}/{year}/results.json"
     offset = 0
     races_dict = {}
 
     while True:
-        response = requests.get(
-            url,
-            params = {"limit": config.PAGE_LIMIT, "offset": offset},
-            headers = config.HEADERS,
-            timeout = 15,
-        )
-        response.raise_for_status()
-        mr_data = response.json()["MRData"]
-        races_list = mr_data["RaceTable"]["Races"]
+        data = _get_json(url, params={"limit": config.PAGE_LIMIT, "offset": offset})["MRData"]
+        races_list = data["RaceTable"]["Races"]
 
         for race in races_list:
             rnd = int(race["round"])
@@ -33,7 +50,7 @@ def fetch_season_raw(year: int) -> tuple[list[dict], pd.DataFrame]:
                 races_dict[rnd] = race
 
         offset += config.PAGE_LIMIT
-        if offset >= int(mr_data["total"]):
+        if offset >= int(data["total"]):
             break
         time.sleep(config.PAUSE)
 
@@ -50,8 +67,8 @@ def fetch_season_raw(year: int) -> tuple[list[dict], pd.DataFrame]:
                 "season": int(race["season"]),
                 "round": int(race["round"]),
                 "race_date": race.get("date"),
-                "circuit_id": race.get("circuitId"),
-                "circuit_name": race.get("circuitName"),
+                "circuit_id": circuit.get("circuitId"),
+                "circuit_name": circuit.get("circuitName"),
                 "lat": float(loc.get("lat")) if loc.get("lat") else None,
                 "long": float(loc.get("long")) if loc.get("long") else None,
                 "country": loc.get("country"),
@@ -94,6 +111,7 @@ def updat_raw_database(start_year: int = config.START_YEAR, end_year: int = conf
         full_raw_df = pd.concat(all_dfs, ignore_index=True)
         with sqlite3.connect(config.DB_PATH) as conn:
             full_raw_df.to_sql("raw", conn, if_exists="replace", index=False)
+        print("Extraction terminée et table 'raw' mise à jour.")
 
 
 if __name__ == "__main__":
