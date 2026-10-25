@@ -24,3 +24,9 @@ def test_homonyms_are_split_by_era() -> None:
     assert resolve_team("alfa", 1950) == "alfa_romeo_works"
     assert resolve_team("alfa", 2020) == "sauber"
     assert resolve_team("alfa", 1950) != resolve_team("alfa", 2020)
+
+
+def test_chassis_engine_suffix_is_stripped() -> None:
+    """Les identifiants châssis-moteur des années 60 remontent au constructeur."""
+    assert resolve_team("lotus-climax", 1963) == "team_lotus"
+    assert resolve_team("brabham-repco", 1966) == "brabham"
