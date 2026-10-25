@@ -16,3 +16,11 @@ def test_renamed_teams_share_one_key() -> None:
     assert resolve_team("minardi", 2000) == "rb"
     assert resolve_team("toro_rosso", 2010) == "rb"
     assert resolve_team("alphatauri", 2022) == "rb"
+
+
+def test_homonyms_are_split_by_era() -> None:
+    """Alfa Romeo usine (1950) et Alfa Romeo - Sauber (2020) sont
+    deux entités distinctes."""
+    assert resolve_team("alfa", 1950) == "alfa_romeo_works"
+    assert resolve_team("alfa", 2020) == "sauber"
+    assert resolve_team("alfa", 1950) != resolve_team("alfa", 2020)
