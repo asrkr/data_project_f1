@@ -100,7 +100,8 @@ flowchart TD
     D --> F[Remplissage table 'raw' dans SQLite]
     E --> F
     F -->|clean_data.py| G[Calculs d'âge & Typage numérique]
-    G --> H[Remplissage table 'cleaned' dans SQLite]
+    G --> H[Résolution par saison TEAM_LINEAGE + Regex châssis]
+    H --> I[Remplissage table 'cleaned' dans SQLite]
     
 ```
 
@@ -124,4 +125,4 @@ Conformément aux consignes du sujet, l'IA a été sollicitée pour aider à str
 
 **Prompts structurants :**
 
-* *"Comment résoudre la lignées des écuries de F1 entre 1950 et 2025 en tenant compte des homonymes d'époque différentes (ex : Alfa Romeo usine vs Sauber) et des IDs châssis-moteur (ex : lotus-climax) ?"*
+* *"J'essaie de faire un projet avec l'API Ergast/Jolpica de F1, entre 1950 et 2025. Sauf que j'ai du mal à établir la lignée des équipes, (exemple bête : AlphaTauri -> VCARB mais sans spécifier que c'est la même équipe le modèle pensera que ce sont deux équipes différentes alors que non), du coup je voulais savoir si tu pouvais m'aider à faire la lignée pour chaque équipe entre 1950 et 2025. Tu peux regarder sur internet évidemment, que ce soit pour les lignées et aussi pour les constructorId qu'utilise Ergast/Jolpica. Voici ce que j'ai pour le moment : # Dictionnaire de filiation historique des écuries TEAM_LINEAGE = { # Benetton -> Renault -> Lotus F1 -> Renault -> Alpine "benetton": "alpine", "renault": "alpine", "lotus_f1": "alpine", # Jordan -> Midland -> Spyker -> Force India -> Racing Point -> Aston Martin "jordan": "aston_martin", "mf1": "aston_martin", "spyker": "aston_martin", "spyker_mf1": "aston_martin", "force_india": "aston_martin", "racing_point": "aston_martin", # BAR -> Honda -> Brawn -> Mercedes "bar": "mercedes", "honda": "mercedes", "brawn": "mercedes", # Jaguar -> Red Bull "jaguar": "red_bull", # Minardi -> Toro Rosso -> AlphaTauri -> RB / Racing Bulls "minardi": "rb_junior", "toro_rosso": "rb_junior", "alphatauri": "rb_junior", "rb": "rb_junior", # Sauber -> BMW Sauber -> Alfa Romeo -> (Kick) Sauber -> Audi "bmw_sauber": "sauber", "alfa": "sauber", "audi": "sauber", # Virgin -> Marussia -> Manor "virgin": "manor", "marussia": "manor", # Lotus Racing -> Caterham "lotus_racing": "caterham", }"*
