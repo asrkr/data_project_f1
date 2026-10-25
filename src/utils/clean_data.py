@@ -1,8 +1,14 @@
+"""Nettoyage des données brutes et résolution de la filiation des écuries.
+
+Lit la table 'raw', type les colonnes, calcule l'âge des pilotes et attribue
+une clé d'écurie canonique, puis écrit la table 'cleaned'.
+"""
 import re
 import sqlite3
-import pandas as pd
-import config
 
+import pandas as pd
+
+import config
 
 # 1) Lignées simples : constructorId -> clé canonique
 TEAM_LINEAGE = {
@@ -100,27 +106,28 @@ _CHASSIS_TO_TEAM = {
 }
 
 
-def resolve_team(constructor_id: str, season: int) -> str:
+def resolve_team(constructor_id: str | None, season: int) -> str:
     """Retourne la clé unique d'écurie pour un constructor_id et une saison."""
     if not constructor_id or pd.isna(constructor_id):
         return "unknown"
 
     cid = str(constructor_id).strip().lower()
 
-    # 1) Filtrage par années pour les IDs ambigus
-    for item_id, y0, y1, cannon in LINEAGE_BY_YEAR:
-        if item_id == cid and y0 <= season <= y1:
-            return cannon
+    # 1) Les homonymes d'époques différentes sont tranchés par l'année
+    for item_id, year_min, year_max, canon in LINEAGE_BY_YEAR:
+        if item_id == cid and year_min <= season <= year_max:
+            return canon
 
     # 2) Dictionnaire simple
     if cid in TEAM_LINEAGE:
         return TEAM_LINEAGE[cid]
 
     # 3) Nettoyage des identifiants châssis-moteur
-    m = _ENGINE_SUFFIX.match(cid)
-    if m and m.group(1) in _CHASSIS_TO_TEAM:
-        return _CHASSIS_TO_TEAM[m.group(1)]
+    match = _ENGINE_SUFFIX.match(cid)
+    if match and match.group(1) in _CHASSIS_TO_TEAM:
+        return _CHASSIS_TO_TEAM[match.group(1)]
 
+    # 4) Si une écurie a un identifiant unique, on garde l'ID tel quel
     return cid
 
 
@@ -133,35 +140,38 @@ def clean_raw_data() -> None:
         print("La table 'raw' est vide. Lancez d'abord get_data.py.")
         return
 
-    # 1) Résolution de la clé d'écurie canonique
-    df["team_key"] = df.apply(
-        lambda r: resolve_team(r["constructor_id"], int(r["season"])), axis = 1
-    )
+    # 1) Typage numérique (la table raw conserve les chaînes de l'API)
+    for col in ["season", "round", "position", "grid", "points", "lat", "long"]:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+    df["season"] = df["season"].astype(int)
 
-    # 2) Conversion des dates
-    df["race_date"] = pd.to_datetime(df["race_date"])
-    df["date_of_birth"] = pd.to_datetime(df["date_of_birth"])
+    # 2) L'IndyCar (Indy 500) comptait au championnat F1 de 1950 à 1960 mais avec des voitures
+    # et pilotes différents : on le retire pour ne garder que de la vraie F1
+    is_indy = (df["circuit_id"] == "indianapolis") & (df["season"] <= config.INDY_LAST_SEASON)
+    df = df[~is_indy].copy()
 
-    # 3) Calcul de l'âge exact du pilote au jour de la course (en années)
-    df["age_at_race"] = (df["race_date"] - df["date_of_birth"]).dt.days / 365.25
-    df["age_at_race"] = df["age_at_race"].round()
+    # 3) Nom complet du pilote
+    df["driver_name"] = (
+        df["given_name"].fillna("") + " " + df["family_name"].fillna("")
+    ).str.strip()
 
-    # 4) Typage numérique pour plotly et dash
-    for col in ["position", "grid", "points", "lat", "long"]:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors="coerce")
+    # 4) Clé d'écurie canonique (résolution par saison)
+    df["team_key"] = [
+        resolve_team(cid, season)
+        for cid, season in zip(df["constructor_id"], df["season"], strict=True)
+    ]
 
-    # 5) Formatage ISO des dates pour SQLite
+    # 5) Conversion des dates (coerce pour gérer les absences de date de naissance)
+    df["race_date"] = pd.to_datetime(df["race_date"], errors="coerce")
+    df["date_of_birth"] = pd.to_datetime(df["date_of_birth"], errors="coerce")
+
+    # 6) Calcul de l'âge exact du pilote au jour de la course (en années)
+    df["age_at_race"] = ((df["race_date"] - df["date_of_birth"]).dt.days / 365.25).round(2)
+
+    # 7) Formatage ISO des dates pour SQLite
     df["race_date"] = df["race_date"].dt.strftime("%Y-%m-%d")
     df["date_of_birth"] = df["date_of_birth"].dt.strftime("%Y-%m-%d")
 
-    # 6) L'IndyCar (Indy 500) comptait au championnat F1 de 1950 à 1960
-    # mais avec des voitures et pilotes différents : on le retire pour ne garder
-    # que de la vraie F1
-    is_indy = (df["circuit_id"] == "indianapolis") & (df["season"] <= 1960)
-    df = df[~is_indy].copy()
-
-    # 6) Sauvegarde dans la table cleaned
     with sqlite3.connect(config.DB_PATH) as conn:
         df.to_sql("cleaned", conn, if_exists="replace", index=False)
 
