@@ -27,7 +27,7 @@ TEAM_LINEAGE = {
     "jaguar": "red_bull",
     "red_bull": "red_bull",
     # Usine de Faenza (RB / Racing Bulls)
-    "minard": "rb",
+    "minardi": "rb",
     "toro_rosso": "rb",
     "alphatauri": "rb",
     "rb": "rb",
@@ -118,7 +118,7 @@ def resolve_team(constructor_id: str, season: int) -> str:
 
     # 3) Nettoyage des identifiants châssis-moteur
     m = _ENGINE_SUFFIX.match(cid)
-    if m and m.group() in _CHASSIS_TO_TEAM:
+    if m and m.group(1) in _CHASSIS_TO_TEAM:
         return _CHASSIS_TO_TEAM[m.group(1)]
 
     return cid
@@ -154,6 +154,12 @@ def clean_raw_data() -> None:
     # 5) Formatage ISO des dates pour SQLite
     df["race_date"] = df["race_date"].dt.strftime("%Y-%m-%d")
     df["date_of_birth"] = df["date_of_birth"].dt.strftime("%Y-%m-%d")
+
+    # 6) L'IndyCar (Indy 500) comptait au championnat F1 de 1950 à 1960
+    # mais avec des voitures et pilotes différents : on le retire pour ne garder
+    # que de la vraie F1
+    is_indy = (df["circuit_id"] == "indianapolis") & (df["season"] <= 1960)
+    df = df[~is_indy].copy()
 
     # 6) Sauvegarde dans la table cleaned
     with sqlite3.connect(config.DB_PATH) as conn:
