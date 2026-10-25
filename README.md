@@ -73,6 +73,7 @@ data_project_f1/
 |   ├── db.sqlite           # Base SQLite (tables 'raw' et 'cleaned')
 |   └── raw/                # Cache local JSON par saison (results_YYYY.json)
 ├── src/
+|   ├── __init__.py
 |   ├── components/
 |   |   ├── __init__.py
 |   |   └── layout.py
@@ -86,7 +87,7 @@ data_project_f1/
 ├── main.py                 # Point d'entrée principal
 ├── pyproject.toml          # Dépendances du projet (gérées par uv)
 ├── README.md               # Documentation
-├── uv.lock                 # Verrouillage des versions exactes
+└── uv.lock                 # Verrouillage des versions exactes
 ```
 
 ### Pipeline d'ingestion et de nettoyage (Mermaid)
