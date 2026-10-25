@@ -110,6 +110,12 @@ flowchart TD
 1. **Gestion des erreurs HTTP 429 (rate limiting)** :
 L'extraction de 75 saisons implique de nombreuses requêtes. Une fonction d'accès réseau avec temporisation progressive (exponential backoff) a été implémentée dans `get_data.py`pour retenter automatiquement en cas de réponse 429 du serveur.
 
+2. **Résolution de la filiation historique des écuries (1950-2025)** :
+Pour traiter 75 ans d'histoire de la Formule 1, il existe plusieurs transitions historiques susceptibles de biaiser les analyses. Rachats d'usines, homonymes d'époques différentes comme Alfa Romeo (usine dans les années 50) et Alfa Romeo des années 2020 (simple rachat d'une usine existante), ou encore des identifiants châssis-moteur des années 50 imposés par l'API. Afin de pouvoir effectuer des comparaisons historiques justes et préserver la cohérence des filtres du dashboard, `clean_data.py` combine :
+* Une résolution par intervalle d'années (`LINEAGE_BY_YEAR`).
+* Une extraction automatique par Regex pour les combinaisons châssis-moteur (`lotus-climax` $\rightarrow$ `team_lotus`)
+* l'attribution d'une clé canonique d'usine unifiée `team_key`.
+
 
 ## Copyright
 
