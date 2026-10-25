@@ -9,8 +9,11 @@ wheels/
 # Virtual environments
 .venv
 
-# test tools cache
+# Test tools cache
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
 .coverage
+
+# Raw JSON cache
+data/raw/
