@@ -28,6 +28,12 @@ uv sync
 uv run python main.py
 ```
 
+4. Optionnel : télécharger le cache JSON et recréer la database complète
+```bash
+uv run python -m src.utils.get_data
+uv run python -m src.utils.clean_data
+```
+
 ### Démonstration vidéo
 
 *(À venir - la vidéo de démonstration sera ajoutée à la fin du développement)*.
