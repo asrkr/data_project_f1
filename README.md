@@ -87,6 +87,10 @@ data_project_f1/
 |       ├── __init__.py
 |       ├── get_data.py     # Ingestion API, cache local JSON et remplissage de 'raw'
 |       └── clean_data.py   # Nettoyage, typage et résolution d'écuries ('cleaned')
+├── tests/
+|   ├── __init__.py
+|   ├── conftest.py
+|   └── test_clean_data.py
 ├── .gitignore
 ├── .python-version         # Précision de la version de Python utilisée
 ├── config.py               # Configuration centralisée (chemins, constantes API)
