@@ -105,7 +105,7 @@ def fetch_season_raw(year: int, force_download: bool = False) -> tuple[list[dict
     return all_races, _parse_races_to_df(all_races)
 
 
-def updat_raw_database(start_year: int = config.START_YEAR, end_year: int = config.END_YEAR, force_download: bool = False) -> None:
+def update_raw_database(start_year: int = config.START_YEAR, end_year: int = config.END_YEAR, force_download: bool = False) -> None:
     """Remplit la table 'raw' de la db SQLite en lisant le cache JSON
     ou en téléchargeant les saisons manquantes."""
     all_dfs = []
@@ -130,4 +130,4 @@ def updat_raw_database(start_year: int = config.START_YEAR, end_year: int = conf
 
 
 if __name__ == "__main__":
-    updat_raw_database()
+    update_raw_database()
