@@ -1,6 +1,9 @@
 """Fonctions utilitaires partagées par le pipeline et le dashboard."""
 
 import sqlite3
+from contextlib import closing
+
+import pandas as pd
 
 import config
 
@@ -18,3 +21,15 @@ def table_exists(table_name: str) -> bool:
     query = "SELECT name FROM sqlite_master WHERE type='table' and name=?"
     with sqlite3.connect(config.DB_PATH) as conn:
         return conn.execute(query, (table_name,)).fetchone() is not None
+
+
+def load_cleaned() -> pd.DataFrame:
+    """Charge la table 'cleaned' de la base SQLite dans un DataFrame.
+    Lève une RuntimeError si la table 'cleaned' n'existe pas encore."""
+    if not table_exists("cleaned"):
+        raise RuntimeError(
+            "Table 'cleaned' absente : lancez 'uv run python -m src.utils.get_data' "
+            "puis 'uv run python- m src.utils.clean_data'."
+        )
+    with closing(sqlite3.connect(config.DB_PATH)) as conn:
+        return pd.read_sql("SELECT * FROM cleaned", conn)
