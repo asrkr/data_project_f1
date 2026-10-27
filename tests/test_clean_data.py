@@ -29,3 +29,9 @@ def test_chassis_engine_suffix_is_stripped() -> None:
 def test_unknown_id_is_kept_as_is() -> None:
     """Une écurie sans lignée connue garde son identifiant Ergast."""
     assert resolve_team("hesketh", 1975) == "hesketh"
+
+
+def test_missing_id_returns_unknown() -> None:
+    """Un identifiant absent ou vide est classé comme écurie inconnue."""
+    assert resolve_team(None, 2000) == "unknown"
+    assert resolve_team("", 2000) == "unknown"
