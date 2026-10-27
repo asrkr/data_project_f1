@@ -52,3 +52,10 @@ def test_flatten_result_reads_nested_key() -> None:
     assert row["country"] == "Australia"
     assert row["driver_id"] == "irvine"
     assert row["constructor_id"] == "ferrari"
+
+
+def test_parse_races_to_df_one_row_per_result() -> None:
+    """Chaque résultat de pilote devient une ligne, abandons compris."""
+    df = get_data._parse_races_to_df([FAKE_RACE, FAKE_RACE])
+    assert len(df) == 4     # 2 courses * 2 résultats
+    assert list(df["position_text"]) == ["1", "R", "1", "R"]
