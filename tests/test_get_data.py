@@ -1,9 +1,12 @@
 """Tests de la récupération des données (sans appel réseau)."""
 
+import json
 import os
 import time
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
+
+import pytest
 
 import config
 from src.utils import get_data
@@ -78,3 +81,22 @@ def test_cache_is_stale_only_for_latest_season(tmp_path: Path) -> None:
 
     assert get_data._cache_is_stale(cache, config.END_YEAR - 1) is False
     assert get_data._cache_is_stale(cache, config.END_YEAR) is True
+
+
+def test_fetch_season_raw_uses_cache_without_network(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+)-> None:
+    """Si le JSON est en cache, aucune requête HTTP ne doit partir."""
+    monkeypatch.setattr(config, "RAW_DIR", tmp_path)
+    cache_file = tmp_path / "results_1999.json"
+    cache_file.write_text(json.dumps([FAKE_RACE]), encoding="utf-8")
+
+    def _no_network(*_args: Any, **_kwargs: Any) -> NoReturn:
+        raise AssertionError("appel réseau inattendu")
+
+    # Toute tentative d'appel à l'API fera échouer le test
+    monkeypatch.setattr(get_data.requests, "get", _no_network)
+
+    races, df = get_data.fetch_season_raw(1999)
+    assert len(races) == 1
+    assert len(df) == 2
