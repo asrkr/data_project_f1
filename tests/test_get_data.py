@@ -1,9 +1,11 @@
 """Tests de la récupération des données (sans appel réseau)."""
 
-# Les fonctions privées (_flatten_results, ...) sont testées volontairement.
-
+import os
+import time
+from pathlib import Path
 from typing import Any
 
+import config
 from src.utils import get_data
 
 # Fausse course au format de l'API : deux résultats dont un abandon.
@@ -25,7 +27,8 @@ FAKE_RACE: dict[str, Any] = {
             "position": "1", "positionText": "1", "grid": "3", "points": "10",
             "status": "Finished",
             "Driver": {
-                "driverId": "irvine", "givenName": "Eddie", "familyName": "Irvine", "dateOfBirth": "1965-11-10",
+                "driverId": "irvine", "givenName": "Eddie", "familyName": "Irvine",
+                "dateOfBirth": "1965-11-10",
             },
             "Constructor": {
                 "constructorId": "ferrari", "name": "Ferrari",
@@ -35,7 +38,8 @@ FAKE_RACE: dict[str, Any] = {
             "position": "2", "positionText": "R", "grid": "1", "points": "0",
             "status": "Accident",
             "Driver": {
-                "driverId": "hakkinen", "givenName": "Mika", "familyName": "Häkkinen", "datOfBirth": "1968-09-28",
+                "driverId": "hakkinen", "givenName": "Mika", "familyName": "Häkkinen",
+                "datOfBirth": "1968-09-28",
             },
             "Constructor": {
                 "constructorId": "mclaren", "name": "McLaren",
@@ -43,6 +47,8 @@ FAKE_RACE: dict[str, Any] = {
         },
     ],
 }
+
+# Les fonctions privées (_flatten_results, ...) sont testées volontairement.
 
 
 def test_flatten_result_reads_nested_key() -> None:
@@ -59,3 +65,16 @@ def test_parse_races_to_df_one_row_per_result() -> None:
     df = get_data._parse_races_to_df([FAKE_RACE, FAKE_RACE])
     assert len(df) == 4     # 2 courses * 2 résultats
     assert list(df["position_text"]) == ["1", "R", "1", "R"]
+
+
+def test_cache_is_stale_only_for_latest_season(tmp_path: Path) -> None:
+    """Seule la saison END_YEAR expire. Une saison terminée reste
+    valide même si elle est ancienne."""
+    cache = tmp_path / "results.json"
+    cache.write_text("[]", encoding="utf-8")
+    # On vieillit artificiellement le fichier au-delà de la durée de validité
+    old_timestamp = time.time() - (config.CACHE_MAX_AGE_DAYS + 1) * 86400
+    os.utime(cache, (old_timestamp, old_timestamp))
+
+    assert get_data._cache_is_stale(cache, config.END_YEAR - 1) is False
+    assert get_data._cache_is_stale(cache, config.END_YEAR) is True
