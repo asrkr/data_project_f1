@@ -3,6 +3,7 @@
 Lit la table 'raw', type les colonnes, calcule l'âge des pilotes et attribue
 une clé d'écurie canonique, puis écrit la table 'cleaned'.
 """
+
 import re
 import sqlite3
 

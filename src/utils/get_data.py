@@ -66,7 +66,7 @@ def _flatten_result(race: dict[str, Any], result: dict[str, Any]) -> dict[str, A
         "constructor_id": constructor.get("constructorId"),
         "team_name": constructor.get("name"),
         "position": result.get("position"),
-        "position_text": result.get("positionText"),    # Pour gérer les abandons
+        "position_text": result.get("positionText"),  # Pour gérer les abandons
         "grid": result.get("grid"),
         "status": result.get("status"),
         "points": result.get("points"),
@@ -77,9 +77,7 @@ def _parse_races_to_df(all_races: list[dict[str, Any]]) -> pd.DataFrame:
     """Transforme la liste brute de courses (JSON) en
     DataFrame Pandas : une ligne par résultat"""
     rows = [
-        _flatten_result(race, result)
-        for race in all_races
-        for result in race.get("Results", [])
+        _flatten_result(race, result) for race in all_races for result in race.get("Results", [])
     ]
     return pd.DataFrame(rows)
 
@@ -96,9 +94,8 @@ def _cache_is_stale(json_path: Path, year: int) -> bool:
 
 
 def fetch_season_raw(
-        year: int,
-        force_download: bool = False
-    ) -> tuple[list[dict[str, Any]], pd.DataFrame]:
+    year: int, force_download: bool = False
+) -> tuple[list[dict[str, Any]], pd.DataFrame]:
     """Récupère les résultats d'une saison : depuis le cache JSON local si disponible
     et encore valide, sinon via l'API Jolpica."""
     config.RAW_DIR.mkdir(parents=True, exist_ok=True)
@@ -106,7 +103,6 @@ def fetch_season_raw(
 
     # 1. Utilisation du cache local JSON s'il existe e n'est pas encore périmé
     if json_path.exists() and not force_download and not _cache_is_stale(json_path, year):
-
         with json_path.open(encoding="utf-8") as f:
             cached_races: list[dict[str, Any]] = json.load(f)
         return cached_races, _parse_races_to_df(cached_races)
@@ -144,10 +140,10 @@ def fetch_season_raw(
 
 
 def update_raw_database(
-        start_year: int = config.START_YEAR,
-        end_year: int = config.END_YEAR,
-        force_download: bool = False
-    ) -> None:
+    start_year: int = config.START_YEAR,
+    end_year: int = config.END_YEAR,
+    force_download: bool = False,
+) -> None:
     """Remplit la table 'raw' de la db SQLite en lisant le cache JSON
     ou en téléchargeant les saisons manquantes."""
     all_dfs = []
