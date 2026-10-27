@@ -1,12 +1,17 @@
 """Tests de la récupération des données (sans appel réseau)."""
 
+# Les fonctions privées (_flatten_results, ...) sont testées volontairement.
+# pylint: disable=protected-access
+
 import json
 import os
 import time
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, NoReturn
 
 import pytest
+import requests
 
 import config
 from src.utils import get_data
@@ -51,8 +56,6 @@ FAKE_RACE: dict[str, Any] = {
     ],
 }
 
-# Les fonctions privées (_flatten_results, ...) sont testées volontairement.
-
 
 def test_flatten_result_reads_nested_key() -> None:
     """Les champs imbriqués (Circuit.Location, Driver, Constructor) sont aplatis."""
@@ -95,8 +98,24 @@ def test_fetch_season_raw_uses_cache_without_network(
         raise AssertionError("appel réseau inattendu")
 
     # Toute tentative d'appel à l'API fera échouer le test
-    monkeypatch.setattr(get_data.requests, "get", _no_network)
+    monkeypatch.setattr(requests, "get", _no_network)
 
     races, df = get_data.fetch_season_raw(1999)
     assert len(races) == 1
     assert len(df) == 2
+
+
+def test_get_json_retries_after_429(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Un HTTP 429 (limite d'API dépassée) déclenche
+    une nouvelle tentative, qui aboutit."""
+    payload = {"MRData": {"total": "0"}}
+    # Fausses réponses successives : d'abord refusée, puis acceptée
+    responses = iter([
+        SimpleNamespace(status_code=429, json=lambda: {}),
+        SimpleNamespace(status_code=200, json=lambda: payload),
+    ])
+    monkeypatch.setattr(requests, "get", lambda *_a, **_k: next(responses))
+    # On neutralise les pauses poru que le test soit instantané
+    monkeypatch.setattr(time, "sleep", lambda _seconds: None)
+
+    assert get_data._get_json("http://fake") == payload
