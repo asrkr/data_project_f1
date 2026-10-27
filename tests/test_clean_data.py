@@ -1,4 +1,4 @@
-""" "Tests de nettoyage et de la résolution de filiation des écuries."""
+""""Tests de nettoyage et de la résolution de filiation des écuries."""
 
 import sqlite3
 from pathlib import Path
@@ -64,7 +64,7 @@ def _raw_row(**overrides: Any) -> dict[str, Any]:
 
 
 def test_clean_raw_data_builds_cleaned_table(tmp_db: Path) -> None:
-    """La table cleaned est crée, enrichie et exclut l'Indy Car."""
+    """La table cleaned est crée, enrichie et exclut l'Indy 500."""
     rows = [
         _raw_row(),
         _raw_row(season="1955", circuit_id="indianapolis", constructor_id="kurtis_kraft"),

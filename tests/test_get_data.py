@@ -47,7 +47,7 @@ FAKE_RACE: dict[str, Any] = {
             "status": "Accident",
             "Driver": {
                 "driverId": "hakkinen", "givenName": "Mika", "familyName": "Häkkinen",
-                "datOfBirth": "1968-09-28",
+                "dateOfBirth": "1968-09-28",
             },
             "Constructor": {
                 "constructorId": "mclaren", "name": "McLaren",
@@ -87,7 +87,8 @@ def test_cache_is_stale_only_for_latest_season(tmp_path: Path) -> None:
 
 
 def test_fetch_season_raw_uses_cache_without_network(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 )-> None:
     """Si le JSON est en cache, aucune requête HTTP ne doit partir."""
     monkeypatch.setattr(config, "RAW_DIR", tmp_path)
@@ -115,7 +116,7 @@ def test_get_json_retries_after_429(monkeypatch: pytest.MonkeyPatch) -> None:
         SimpleNamespace(status_code=200, json=lambda: payload),
     ])
     monkeypatch.setattr(requests, "get", lambda *_a, **_k: next(responses))
-    # On neutralise les pauses poru que le test soit instantané
+    # On neutralise les pauses pour que le test soit instantané
     monkeypatch.setattr(time, "sleep", lambda _seconds: None)
 
     assert get_data._get_json("http://fake") == payload
