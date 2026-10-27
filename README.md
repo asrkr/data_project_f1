@@ -101,12 +101,12 @@ data_project_f1/
 |   └── utils/
 |       ├── __init__.py
 |       ├── clean_data.py           # table 'raw' -> table 'cleaned'
-|       ├── common_functions.py     # fonctions partagées (table_exists)
+|       ├── common_functions.py     # fonctions partagées (table_exists, load_cleaned)
 |       └── get_data.py             # API -> cache JSON -> table 'raw'    
 ├── tests/
 |   ├── __init__.py
 |   ├── conftest.py                 # fixtures partagées (base temporaire)
-|   ├── test_clean_data.py                # Précision de la version de Python utilisée
+|   ├── test_clean_data.py
 |   ├── test_common_functions.py
 |   └── test_get_data.py
 ├── .gitignore
@@ -166,7 +166,7 @@ uv run pytest -v
 | Fichier | Ce qui est vérifié |
 |---|---|
 | `test_clean_data.py` | Résolution des écuries (renommages, homonymes, châssis-moteur, identifiants inconnus ou absents) et construction complète de la table `cleaned` |
-| `test_common_functions.py` | Détection des tables dans la base SQLite |
+| `test_common_functions.py` | Détection des tables dans la base SQLite et chargement de la tablea 'cleaned'|
 | `test_get_data.py` | Aplatissement du JSON, conversion en DataFrame, expiration du cache, lecture du cache sans réseau, nouvelle tentative après un HTTP 429 |
 
 Principes :
