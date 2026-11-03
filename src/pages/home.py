@@ -18,3 +18,11 @@ def _key_figures() -> dict[str, int]:
         "Pilotes": df["driver_id"].nunique(),
         "Circuits": df["circuit_id"].nunique(),
     }
+
+
+def _figure_card(label: str, value: int) -> html.Div:
+    """Construit une vignette affichant un chiffre clé et son libellé."""
+    return html.Div(
+        [html.H2(f"{value:,}".replace(",", " ")), html.P(label)],
+        style={"textAlign": "center", "padding": "20px", "minWidth": "150px"},
+    )
