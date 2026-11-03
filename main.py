@@ -1,5 +1,6 @@
 """Point d'entrée : prépare les données si nécessaire, puis lance le dashboard."""
 import argparse
+import logging
 
 import config
 from src.app import create_app
@@ -20,10 +21,13 @@ def main() -> None:
         update_raw_database()
         clean_raw_data()
 
+    # Le serveur de développement (werkzeug) affiche un avertissement au lancement :
+    # On ne garde que les erreurs pour que la console reste propre.
+    # Aucun warning à l'exécution.
+    logging.getLogger("werkzeug").setLevel(logging.ERROR)
     app = create_app()
     app.run(host=config.HOST, port=config.PORT, debug=config.DEBUG)
 
 
 if __name__ == "__main__":
     main()
-    
