@@ -20,3 +20,44 @@ def build_age_histogram(df: pd.DataFrame, winners_only: bool = False) -> go.Figu
     )
     fig.update_layout(yaxis_title="Nombre de départs")
     return fig
+
+
+def build_circuits_map(df: pd.DataFrame) -> go.Figure:
+    """Carte des circuits : un point par circuit, taille = nombre de GP."""
+    races = df.drop_duplicates(subset=["season", "round"])
+    circuits = races.groupby("circuit_id", as_index=False).agg(
+        circuit_name = ("circuit_name", "first"),
+        country = ("country", "first"),
+        lat = ("lat", "first"),
+        long = ("long", "first"),
+        nb_gp = ("round", "size"),
+        first_season = ("season", "min"),
+        last_season = ("season", "max"),
+    )
+    fig = px.scatter_map(
+        circuits,
+        lat = "lat",
+        lon = "long",
+        size = "nb_gp",
+        hover_name = "circuit_name",
+        hover_data = {
+            "country": True,
+            "nb_gp": True,
+            "first_season": True,
+            "last_season": True,
+            "lat": False,
+            "long": False,
+        },
+        labels = {
+            "country": "Pays",
+            "nb_gp": "Nombre de courses",
+            "first_season": "Première saison",
+            "last_season": "Dernière saison",
+        },
+        size_max = 25,
+        zoom = 1,
+        map_style = "carto-positron",
+        template = "plotly_white",
+    )
+    fig.update_layout(margin={"l": 0, "r": 0, "t": 0, "b": 0})
+    return fig
