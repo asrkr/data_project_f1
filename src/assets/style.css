@@ -7,15 +7,24 @@ body {
 }
 
 /* Barre de navigation */
-nav {
+.navbar {
     display: flex;
+    align-items: center;
     gap: 24px;
-    padding: 16px, 32px;
-    background: #15151e;
+    padding: 14px 32px;
+    background-color: #15151e;
     border-bottom: 4px solid #e10600;
 }
-nav a { color: #ffffff; text-decoration: none; font-weight: 600; }
-nav a:hover { color: #e10600; }
+
+.navbar a {
+    color: #ffffff;
+    font-weight: 600;
+    text-decoration: None;
+}
+
+.navbar a:hover {
+    color: #e10600;
+}
 
 /* Contenu des pages : largeur limitée et centrée */
 #_pages_content { max-width: 1100px; margin: 0 auto; padding: 32px; }

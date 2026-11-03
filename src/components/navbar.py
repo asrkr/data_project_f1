@@ -8,11 +8,8 @@ def navbar() -> html.Nav:
     return html.Nav(
         [
             # Parcourt chaque page détectée par Dash et crée un lien cliquable
-            dcc.Link(
-                page["name"],
-                href=page["relative_path"],
-                style={"marginRight": "15px"},
-            )
+            dcc.Link(page["name"], href=page["relative_path"])
             for page in dash.page_registry.values()
-        ]
+        ],
+        className = "navbar",
     )
