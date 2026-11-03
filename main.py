@@ -1,7 +1,7 @@
 """Point d'entrée : prépare les données si nécessaire, puis lance le dashboard."""
 import argparse
 
-from config import DEBUG, HOST, PORT
+import config
 from src.app import create_app
 from src.utils.clean_data import clean_raw_data
 from src.utils.common_functions import table_exists
@@ -21,7 +21,7 @@ def main() -> None:
         clean_raw_data()
 
     app = create_app()
-    app.run(host=HOST, port=PORT, debug=DEBUG)
+    app.run(host=config.HOST, port=config.PORT, debug=config.DEBUG)
 
 
 if __name__ == "__main__":
