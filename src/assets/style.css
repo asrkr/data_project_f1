@@ -87,3 +87,8 @@ footer {
 footer p {
     margin: 4px 0;
 }
+
+/* Carte des circuits */
+.map-graph {
+    height: 70vh;
+}
