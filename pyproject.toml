@@ -48,6 +48,7 @@ select = ["E", "F", "I", "UP", "B", "PTH", "SIM"]
 python_version = "3.14"
 strict = true
 ignore_missing_imports = true
+untyped_calls_exclude = ["dash"]
 
 
 [tool.pytest.ini_options]
