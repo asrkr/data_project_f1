@@ -1,18 +1,10 @@
-"""Composant de la barre de navigation générée automatiquement."""
-import dash
-from dash import dcc, html
+"""Composant du pied de page du dashboard."""
+from dash import html
 
 
-def navbar() -> html.Nav:
-    """Génère les liens de navigation à partir des pages enregistrées dans Dash."""
-    return html.Nav(
-        [
-            # Parcourt chaque page détectée par Dash et crée un lien cliquable
-            dcc.Link(
-                page["name"],
-                href=page["relative_path"],
-                style={"marginRight": "15px"},
-            )
-            for page in dash.page_registry.values()
-        ]
+def footer() -> html.Footer:
+    """Retourne le pied de page commun à toutes les pages."""
+    return html.Footer(
+        html.P("F1 Dashboard 1950-2025 - Projet Data"),
+        style={"marginTop": "40px", "textAlign": "center"},
     )
