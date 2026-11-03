@@ -1,5 +1,6 @@
 """Création de l'application Dash multi-pages."""
 from dash import Dash, html, page_container
+
 from src.components.footer import footer
 from src.components.navbar import navbar
 

@@ -1,5 +1,6 @@
 """Point d'entrée : prépare les données si nécessaire, puis lance le dashboard."""
 import argparse
+
 from config import DEBUG, HOST, PORT
 from src.app import create_app
 from src.utils.clean_data import clean_raw_data

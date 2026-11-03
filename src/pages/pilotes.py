@@ -1,7 +1,8 @@
 """Page d'analyse de l'âge des pilotes filtrable par décennie."""
 import dash
-from dash import Input, Output, callback, dcc, html
 import plotly.graph_objects as go
+from dash import Input, Output, callback, dcc, html
+
 from src.components.figures import build_age_histogram
 from src.utils.common_functions import load_cleaned
 
