@@ -1,7 +1,7 @@
 [project]
 name = "data-project-f1"
 version = "0.1.0"
-description = "F1 Data Analysis Dashboard"
+description = "Dashboard d'analyse historique de la Formule 1 (1950-2025)"
 readme = "README.md"
 authors = [
     { name = "Ayan Sarkar", email = "ayan.sarkar@edu.esiee.fr" },
