@@ -16,4 +16,3 @@ def navbar() -> html.Nav:
             for page in dash.page_registry.values()
         ]
     )
-    
