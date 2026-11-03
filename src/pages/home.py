@@ -24,7 +24,7 @@ def _figure_card(label: str, value: int) -> html.Div:
     """Construit une vignette affichant un chiffre clé et son libellé."""
     return html.Div(
         [html.H2(f"{value:,}".replace(",", " ")), html.P(label)],
-        style={"textAlign": "center", "padding": "20px", "minWidth": "150px"},
+        className = "key-figure",
     )
 
 
@@ -38,7 +38,7 @@ layout = html.Div(
         ),
         html.Div(
             [_figure_card(label, value) for label, value in _key_figures().items()],
-            style={"display": "flex", "justifyContent": "center", "gap": "20px"},
+            className = "key-figures",
         ),
     ]
 )
