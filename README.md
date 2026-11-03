@@ -96,8 +96,7 @@ data_project_f1/
 ├── src/
 |   ├── __init__.py
 |   ├── components/                 # composants du dashboard
-|   |   ├── __init__.py
-|   |   └── layout.py
+|   |   └── __init__.py
 |   └── utils/
 |       ├── __init__.py
 |       ├── clean_data.py           # table 'raw' -> table 'cleaned'
