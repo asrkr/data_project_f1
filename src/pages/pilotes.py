@@ -34,6 +34,6 @@ layout = html.Div(
 def update_age_histogram(decade: int) -> go.Figure:
     """Filtre les données par décennie et met à jour l'histogramme."""
     filtered_df = DF_CLEANED[
-        (DF_CLEANED["saison"] >= decade) & (DF_CLEANED["saison"] < decade + 10)
+        (DF_CLEANED["season"] >= decade) & (DF_CLEANED["season"] < decade + 10)
     ]
     return build_age_histogram(filtered_df)
