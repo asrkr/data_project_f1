@@ -9,7 +9,7 @@ Ce projet propose une infrastructure d'analyse historique de la Formule 1 de 195
 
 ### Prérequis
 
-- Python 3.11 ou plus récent
+- Python 3.14 ou plus récent
 - Le gestionnaire d'environnements [`uv`](https://github.com/astral-sh/uv).
 
 ### Installation et lancement
