@@ -26,3 +26,19 @@ def _figure_card(label: str, value: int) -> html.Div:
         [html.H2(f"{value:,}".replace(",", " ")), html.P(label)],
         style={"textAlign": "center", "padding": "20px", "minWidth": "150px"},
     )
+
+
+layout = html.Div(
+    [
+        html.H1("Formule 1 : 75 ans de résultats (1950-2025)"),
+        html.P(
+            "Ce dashboard explore l'histoire du championnat du monde de Formule 1 "
+            "à partir des résultats de chaque Grand Prix : âge des pilotes, "
+            "circuits visités et évolution des saisons."
+        ),
+        html.Div(
+            [_figure_card(label, value) for label, value in _key_figures().items()],
+            style={"display": "flex", "justifyContent": "center", "gap": "20px"},
+        ),
+    ]
+)
