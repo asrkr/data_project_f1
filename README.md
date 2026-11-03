@@ -1,5 +1,15 @@
 # Dashboard F1 (1950-2025) - Pipeline de données et visualisation
 
+![Python](https://img.shields.io/badge/Python-3.14-blue?style=flat&logo=python&logoColor=white)
+![uv](https://img.shields.io/badge/uv-package%20manager-DE5FE9?style=flat&logo=uv&logoColor=white)
+![Dash](https://img.shields.io/badge/Dash-4.4-informational?style=flat&logo=plotly&logoColor=white)
+![Plotly](https://img.shields.io/badge/Plotly-7.1-3F4F75?style=flat&logo=plotly&logoColor=white)
+![pandas](https://img.shields.io/badge/pandas-3.0-150458?style=flat&logo=pandas&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-3-003B57?style=flat&logo=sqlite&logoColor=white)
+![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.1-D71F00?style=flat&logo=sqlalchemy&logoColor=white)
+![Pydantic](https://img.shields.io/badge/Pydantic-2.13-E92063?style=flat&logo=pydantic&logoColor=white)
+
+
 Projet réalisé dans le cadre de l'unité "Python 2" de la première année de la filière Data Science et Intelligence Artificielle à ESIEE Paris.
 
 Ce projet propose une infrastructure d'analyse historique de la Formule 1 de 1950 à 2025, à partir de données publiques ouvertes.
@@ -213,5 +223,10 @@ Nous déclarons sur l'honneur que le code fourni a été produit par les membres
 
 ### Bibliothèques et données
 
-- Bibliothèques tierces : `dash`, `pandas`, `plotly`, `requests` (listées dans `pyproject.toml`).
-- Données : [API Jolpica F1](https://api.jolpi.ca/ergast/).
+- **Dépendances d'exécution** (déclarées dans `pyproject.toml`) : `dash`, `plotly`, `pandas`, `requests`, `pydantic`, `sqlalchemy`.
+- **Outils de développement** (groupe `dev`) : `pytest`, `ruff`, `mypy`, `pylint`, `radon`, `pandas-stubs`, `types-requests`.
+- **Bibliothèque standard** : `argparse`, `contextlib`, `json`, `logging`, `os`, `pathlib`, `re`, `sqlite3`,  `types`, `typing`, `time`
+- **Données** : [API Jolpica F1](https://api.jolpi.ca/ergast/). Les données brutes sont mises en cache dans `data/raw/`.
+- **Badges** : générés avec [shields.io](https://shields.io).
+
+Ces bibliothèques sont utilisées comme dépendances. Aucun de leurs fichiers source n'a été copié dans le projet.
