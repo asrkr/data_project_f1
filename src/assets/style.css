@@ -64,13 +64,26 @@ h1 { font-size: 2rem; margin-top: 0; }
     margin-top: 20px;
 }
 
-/* Pied de page */
+/* Mise en page - footer en bas */
+body {
+    margin: 0;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
 footer {
-    margin-top: 48px;
-    padding: 20px;
+    margin-top: auto;
+    padding: 12px;
     text-align: center;
     font-size: 0.85rem;
-    color: #57606a;
-    border-top: 1px solid #d0d7de;
+    color: #666666;
+    border-top: 1px solid #dddddd;
 }
-footer a { color: #e10600; }
+
+footer p {
+    margin: 4px 0;
+}

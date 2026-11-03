@@ -20,5 +20,4 @@ def footer() -> html.Footer:
                 ]
             ),
         ],
-        style = {"marginTop": "40px", "textAlign": "center", "fontSize": "0.9em"},
     )

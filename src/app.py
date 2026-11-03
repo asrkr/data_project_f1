@@ -13,5 +13,5 @@ def create_app() -> Dash:
         suppress_callback_exceptions=True,
         title="F1 Dashboard 1950-2025",
     )
-    app.layout = html.Div([navbar(), page_container, footer()])
+    app.layout = html.Div([navbar(), page_container, footer()], className = "app-container")
     return app
