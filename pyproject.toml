@@ -7,7 +7,7 @@ authors = [
     { name = "Ayan Sarkar", email = "ayan.sarkar@edu.esiee.fr" },
     { name = "Antoine Palliser", email = "antoine.palliser@edu.esiee.fr" },
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = [
     "dash>=4.4.1",
     "pandas>=3.0.6",
