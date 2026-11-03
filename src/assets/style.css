@@ -92,3 +92,8 @@ footer p {
 .map-graph {
     height: 70vh;
 }
+
+/* Page Pilotes */
+.winners-checklist {
+    margin: 16px 0 8px;
+}
