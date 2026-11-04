@@ -6,7 +6,13 @@ import dash
 import pandas as pd
 from dash import Input, Output, Patch, callback, dcc, html
 
-from src.components.figures import build_circuit_top, build_circuits_map, split_first_places
+from src.components.figures import (
+    build_circuit_top,
+    build_circuits_map,
+    pole_win_rate,
+    split_first_places,
+)
+from src.components.key_figures import figure_card
 from src.utils.common_functions import load_cleaned
 
 dash.register_page(__name__, path="/circuits", name="Circuits", order=2)
@@ -108,6 +114,25 @@ def _first_places_block(
     return html.Div(children)
 
 
+def _circuit_figures(df: pd.DataFrame, circuit_id: str) -> dict[str, int | str]:
+    """Chiffres clés d'un circuit sur toute son histoire."""
+    circuit = df[df["circuit_id"] == circuit_id]
+    races = circuit.drop_duplicates(subset=["season", "round"])
+    rate = str(pole_win_rate(df, circuit_id)).replace(".", ",")
+    average = str(pole_win_rate(df)).replace(".", ",")
+    return {
+        "Grands Prix": len(races),
+        "Années d'activité": f"{races['season'].min()}-{races['season'].max()}",
+        "Vainqueurs différents": int(
+            circuit.loc[circuit["position"] == 1, "driver_name"].nunique(),
+        ),
+        "Polemen différents": int(
+            circuit.loc[circuit["grid"] == 1, "driver_name"].nunique(),
+        ),
+        f"Pole → victoire (moyenne F1 {average} %)": f"{rate} %",
+    }
+
+
 @callback(
     Output("circuits-details", "children"),
     Input("circuits-map", "clickData"),
@@ -126,9 +151,12 @@ def show_circuit(click: dict[str, Any] | None) -> html.Div:
     return html.Div(
         [
             html.H2(f"{info['circuit_name']} ({info['country']})"),
-            html.P(
-                f"{len(races)} Grands Prix entre {races['season'].min()} "
-                f"et {races['season'].max()}."
+            html.Div(
+                [
+                    figure_card(label, value)
+                    for label, value in _circuit_figures(df, circuit_id).items()
+                ],
+                className = "key-figures",
             ),
             html.Div(
                 [
