@@ -107,6 +107,11 @@ def build_circuits_map(df: pd.DataFrame, start: int, end: int) -> go.Figure:
     return fig
 
 
+def _years(seasons: pd.Series[int]) -> str:
+    """Liste des saisons triées, sous forme de texte : "1954, 1955, 1957"."""
+    return ", ".join(str(year) for year in sorted(seasons))
+
+
 def _top_drivers(df: pd.DataFrame, circuit_id: str, column: str) -> pd.DataFrame:
     """Pilotes classés 1ers sur un circuit (column = "position" ou "grid")
     On garde ceux qui l'ont fait au moins 2 fois, TOP_MAX (10) au maximum.
@@ -114,7 +119,11 @@ def _top_drivers(df: pd.DataFrame, circuit_id: str, column: str) -> pd.DataFrame
     ne pas avoir un graphique vide.
     """
     firsts = df[(df["circuit_id"] == circuit_id) & (df[column] == 1)]
-    counts = firsts["driver_name"].value_counts().reset_index()
+    counts = (
+        firsts.groupby("driver_name", as_index=False)
+        .agg(count=("season", "size"), years=("season", _years))
+        .sort_values("count", ascending=False)
+    )
     regulars = counts[counts["count"] >= 2]
     if len(regulars) < TOP_MIN:
         return counts.head(TOP_FALLBACK)
@@ -129,12 +138,16 @@ def build_circuit_top(df: pd.DataFrame, circuit_id: str, column: str, label: str
         x = "count",
         y = "driver_name",
         orientation = "h",
+        custom_data = ["years"],
         labels = {"count": label, "driver_name": ""},
         color_discrete_sequence = ["#e10600"],
         template = "plotly_white",
     )
     fig.update_traces(
-        hovertemplate = "%{y} : %{x} " + label.lower() + "<extra></extra>"
+        hovertemplate = (
+            "%{y} : %{x} " + label.lower() + "<br>"
+            "%{customdata[0]}<extra></extra>"
+        )
     )
     fig.update_layout(
         xaxis = {"dtick": 1},
