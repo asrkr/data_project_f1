@@ -5,6 +5,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 AGE_BINS = {"start": 15, "end": 60, "size": 1}
+TOP_MAX = 10
+TOP_MIN = 3
+TOP_FALLBACK = 5
 
 
 def build_age_histogram(
@@ -104,23 +107,39 @@ def build_circuits_map(df: pd.DataFrame, start: int, end: int) -> go.Figure:
     return fig
 
 
-def build_circuit_winners(df: pd.DataFrame, circuit_id: str, top: int = 10) -> go.Figure:
-    """Barres horizontales : pilotes ayant le plus de victoires sur un circuit."""
-    winners = df[(df["circuit_id"] == circuit_id) & (df["position"] == 1)]
-    counts = winners["driver_name"].value_counts().head(top).reset_index()
+def _top_drivers(df: pd.DataFrame, circuit_id: str, column: str) -> pd.DataFrame:
+    """Pilotes classés 1ers sur un circuit (column = "position" ou "grid")
+    On garde ceux qui l'ont fait au moins 2 fois, TOP_MAX (10) au maximum.
+    S'il y en a moins de TOP_MIN (3), on affiche le TOP_FALLBACK (5) pour
+    ne pas avoir un graphique vide.
+    """
+    firsts = df[(df["circuit_id"] == circuit_id) & (df[column] == 1)]
+    counts = firsts["driver_name"].value_counts().reset_index()
+    regulars = counts[counts["count"] >= 2]
+    if len(regulars) < TOP_MIN:
+        return counts.head(TOP_FALLBACK)
+    return regulars.head(TOP_MAX)
+
+
+def build_circuit_top(df: pd.DataFrame, circuit_id: str, column: str, label: str) -> go.Figure:
+    """Barres horizontales : pilotes les plus souvent 1ers sur un circuit."""
+    counts = _top_drivers(df, circuit_id, column)
     fig = px.bar(
         counts,
         x = "count",
         y = "driver_name",
         orientation = "h",
-        labels = {"count": "Victoires", "driver_name": ""},
+        labels = {"count": label, "driver_name": ""},
         color_discrete_sequence = ["#e10600"],
         template = "plotly_white",
     )
-    fig.update_traces(hovertemplate="%{y} : %{x} victoire(s)<extra></extra>")
+    fig.update_traces(
+        hovertemplate = "%{y} : %{x} " + label.lower() + "<extra></extra>"
+    )
     fig.update_layout(
+        xaxis = {"dtick": 1},
         yaxis = {"categoryorder": "total ascending"},
         margin = {"l": 0, "r": 0, "t": 10, "b": 40},
-        height = 350,
+        height = 300,
     )
     return fig

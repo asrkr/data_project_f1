@@ -1,11 +1,12 @@
 """Page de la carte des circuits, filtrable par période."""
 
 from typing import Any
+
 import dash
 import pandas as pd
 from dash import Input, Output, Patch, callback, dcc, html
 
-from src.components.figures import build_circuit_winners, build_circuits_map
+from src.components.figures import build_circuit_top, build_circuits_map
 from src.utils.common_functions import load_cleaned
 
 dash.register_page(__name__, path="/circuits", name="Circuits", order=2)
@@ -104,7 +105,7 @@ def show_circuit(click: dict[str, Any] | None) -> html.Div:
             ),
             html.H3("Pilotes les plus victorieux sur ce circuit"),
             dcc.Graph(
-                figure = build_circuit_winners(df, circuit_id),
+                figure = build_circuit_top(df, circuit_id, "position", "Victoires"),
                 config = {"displayModeBar": False},
             ),
         ]
