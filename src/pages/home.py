@@ -3,6 +3,7 @@
 import dash
 from dash import html
 
+from src.components.key_figures import figure_card
 from src.utils.common_functions import load_cleaned
 
 # order=0 place l'acceuil en premier dans la barre de navigation
@@ -20,14 +21,6 @@ def _key_figures() -> dict[str, int]:
     }
 
 
-def _figure_card(label: str, value: int) -> html.Div:
-    """Construit une vignette affichant un chiffre clé et son libellé."""
-    return html.Div(
-        [html.H2(f"{value:,}".replace(",", " ")), html.P(label)],
-        className = "key-figure",
-    )
-
-
 layout = html.Div(
     [
         html.H1("Formule 1 : 75 ans de résultats (1950-2025)"),
@@ -37,7 +30,7 @@ layout = html.Div(
             "circuits visités et évolution des saisons."
         ),
         html.Div(
-            [_figure_card(label, value) for label, value in _key_figures().items()],
+            [figure_card(label, value) for label, value in _key_figures().items()],
             className = "key-figures",
         ),
     ]
