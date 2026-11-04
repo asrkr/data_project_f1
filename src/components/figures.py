@@ -75,6 +75,7 @@ def build_circuits_map(df: pd.DataFrame, start: int, end: int) -> go.Figure:
         lon="long",
         size="nb_gp",
         hover_name="circuit_name",
+        custom_data = ["circuit_id"],
         hover_data={
             "country": True,
             "nb_gp": True,
@@ -99,5 +100,27 @@ def build_circuits_map(df: pd.DataFrame, start: int, end: int) -> go.Figure:
     fig.update_layout(
         margin={"l": 0, "r": 0, "t": 0, "b": 0},
         uirevision="circuits-map",
+    )
+    return fig
+
+
+def build_circuit_winners(df: pd.DataFrame, circuit_id: str, top: int = 10) -> go.Figure:
+    """Barres horizontales : pilotes ayant le plus de victoires sur un circuit."""
+    winners = df[(df["circuit_id"] == circuit_id) & (df["position"] == 1)]
+    counts = winners["driver_name"].value_counts().head(top).reset_index()
+    fig = px.bar(
+        counts,
+        x = "count",
+        y = "driver_name",
+        orientation = "h",
+        labels = {"count": "Victoires", "driver_name": ""},
+        color_discrete_sequence = ["#e10600"],
+        template = "plotly_white",
+    )
+    fig.update_traces(hovertemplate="%{y} : %{x} victoire(s)<extra></extra>")
+    fig.update_layout(
+        yaxis = {"categoryorder": "total ascending"},
+        margin = {"l": 0, "r": 0, "t": 10, "b": 40},
+        height = 350,
     )
     return fig
