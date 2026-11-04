@@ -5,9 +5,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 AGE_BINS = {"start": 15, "end": 60, "size": 1}
-TOP_MAX = 10
-TOP_MIN = 3
-TOP_FALLBACK = 5
 
 
 def build_age_histogram(
@@ -112,11 +109,11 @@ def _years(seasons: pd.Series[int]) -> str:
     return ", ".join(str(year) for year in sorted(seasons))
 
 
-def _top_drivers(df: pd.DataFrame, circuit_id: str, column: str) -> pd.DataFrame:
-    """Pilotes classés 1ers sur un circuit (column = "position" ou "grid")
-    On garde ceux qui l'ont fait au moins 2 fois, TOP_MAX (10) au maximum.
-    S'il y en a moins de TOP_MIN (3), on affiche le TOP_FALLBACK (5) pour
-    ne pas avoir un graphique vide.
+def split_first_places(
+    df: pd.DataFrame, circuit_id: str, column: str
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Pilotes classés 1ers sur un circuit (column = "position" ou "grid").
+    Renvoie (au moins 2 vicroires, triés par nombre) et (une seule victoire, triés par année)
     """
     firsts = df[(df["circuit_id"] == circuit_id) & (df[column] == 1)]
     counts = (
@@ -125,21 +122,19 @@ def _top_drivers(df: pd.DataFrame, circuit_id: str, column: str) -> pd.DataFrame
         .sort_values("count", ascending=False)
     )
     regulars = counts[counts["count"] >= 2]
-    if len(regulars) < TOP_MIN:
-        return counts.head(TOP_FALLBACK)
-    return regulars.head(TOP_MAX)
+    once = counts[counts["count"] == 1].sort_values("years")
+    return regulars, once
 
 
-def build_circuit_top(df: pd.DataFrame, circuit_id: str, column: str, label: str) -> go.Figure:
-    """Barres horizontales : pilotes les plus souvent 1ers sur un circuit."""
-    counts = _top_drivers(df, circuit_id, column)
+def build_circuit_top(counts: pd.DataFrame, label: str) -> go.Figure:
+    """Barres horizontales des pilotes classés 1ers au moins 2 fois."""
     fig = px.bar(
         counts,
         x = "count",
         y = "driver_name",
         orientation = "h",
         custom_data = ["years"],
-        labels = {"count": label, "driver_name": ""},
+        labels = {"counts": label, "driver_name": ""},
         color_discrete_sequence = ["#e10600"],
         template = "plotly_white",
     )
@@ -150,9 +145,9 @@ def build_circuit_top(df: pd.DataFrame, circuit_id: str, column: str, label: str
         )
     )
     fig.update_layout(
-        xaxis = {"dtick": 1},
+        xaxis = {"dtick": 1, "title": label},
         yaxis = {"categoryorder": "total ascending"},
         margin = {"l": 0, "r": 0, "t": 10, "b": 40},
-        height = 300,
+        height = 80 + 30 * len(counts),
     )
     return fig
