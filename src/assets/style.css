@@ -148,3 +148,20 @@ footer p {
         grid-template-columns: 1fr;
     }
 }
+
+/* Fiche : vignettes compactes */
+.circuit-card .key-figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.circuit-card .key-figure {
+    min-width: 0;
+    margin: 0;
+    padding: 12px 8px;
+}
+
+.circuit-card .key-figure h2 {
+    font-size: 1.5rem;
+}

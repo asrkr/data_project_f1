@@ -129,7 +129,7 @@ def _circuit_figures(df: pd.DataFrame, circuit_id: str) -> dict[str, int | str]:
         "Polemen différents": int(
             circuit.loc[circuit["grid"] == 1, "driver_name"].nunique(),
         ),
-        f"Pole → victoire (moyenne F1 {average} %)": f"{rate} %",
+        f"Pole → victoire (moy. F1 {average} %)": f"{rate} %",
     }
 
 
