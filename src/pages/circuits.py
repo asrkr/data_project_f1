@@ -134,5 +134,9 @@ def show_circuit(click: dict[str, Any] | None) -> html.Div:
             _first_places_block(
                 df, circuit_id, "position", "Victoires", "Une victoire ici :"
             ),
+            html.H3("Pilotes ayant le plus souvent démarré en première position"),
+            _first_places_block(
+                df, circuit_id, "grid", "Poles", "Une pole ici :"
+            ),
         ]
     )
