@@ -73,6 +73,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    --Dash-Fill-Interactive-Strong: #e10600;
 }
 
 footer {
