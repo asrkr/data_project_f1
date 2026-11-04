@@ -1,10 +1,11 @@
 """Page de la carte des circuits, filtrable par période."""
 
+from typing import Any
 import dash
 import pandas as pd
 from dash import Input, Output, Patch, callback, dcc, html
 
-from src.components.figures import build_circuits_map
+from src.components.figures import build_circuit_winners, build_circuits_map
 from src.utils.common_functions import load_cleaned
 
 dash.register_page(__name__, path="/circuits", name="Circuits", order=2)
@@ -55,6 +56,11 @@ def layout(**_kwargs: object) -> html.Div:
                 config = {"scrollZoom": True},
                 className = "map-graph",
             ),
+            html.Div(
+                html.P("Clique sur un circuit de la carte pour afficher sa fiche."),
+                id = "circuits-details",
+                className = "circuit-card",
+            ),
         ]
     )
 
@@ -72,3 +78,34 @@ def update_map(period: list[int]) -> tuple[Patch, str]:
     patched = Patch()
     patched["data"] = build_circuits_map(df, start, end).to_dict()["data"]
     return patched, _summary(df, start, end)
+
+
+@callback(
+    Output("circuits-details", "children"),
+    Input("circuits-map", "clickData"),
+    prevent_initial_call = True,
+)
+def show_circuit(click: dict[str, Any] | None) -> html.Div:
+    """Affiche la fiche du circuit cliqué (pour toute son histoire)."""
+    if not click:
+        return html.Div(html.P("Clique sur un circuit de la carte."))
+    circuit_id = str(click["points"][0]["customdata"][0])
+    df = load_cleaned()
+    races = df[df["circuit_id"] == circuit_id].drop_duplicates(
+        subset = ["season", "round"]
+    )
+    info = races.iloc[0]
+    return html.Div(
+        [
+            html.H2(f"{info['circuit_name']} ({info['country']})"),
+            html.P(
+                f"{len(races)} Grands Prix entre {races['season'].min()} "
+                f"et {races['season'].max()}."
+            ),
+            html.H3("Pilotes les plus victorieux sur ce circuit"),
+            dcc.Graph(
+                figure = build_circuit_winners(df, circuit_id),
+                config = {"displayModeBar": False},
+            ),
+        ]
+    )

@@ -102,3 +102,11 @@ footer p {
 .winners-checklist {
     margin: 16px 0 8px;
 }
+
+/* Fiche du circuit */
+.circuit-card {
+    margin-top: 24px;
+    padding: 16px 24px;
+    background-color: #ffffff;
+    border-left: 4px solid #e10600;
+}
