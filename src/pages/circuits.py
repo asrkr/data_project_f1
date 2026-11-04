@@ -130,13 +130,29 @@ def show_circuit(click: dict[str, Any] | None) -> html.Div:
                 f"{len(races)} Grands Prix entre {races['season'].min()} "
                 f"et {races['season'].max()}."
             ),
-            html.H3("Pilotes les plus victorieux sur ce circuit"),
-            _first_places_block(
-                df, circuit_id, "position", "Victoires", "Une victoire ici :"
-            ),
-            html.H3("Pilotes ayant le plus souvent démarré en première position"),
-            _first_places_block(
-                df, circuit_id, "grid", "Poles", "Une pole ici :"
+            html.Div(
+                [
+                    html.Div(
+                        [
+                            html.H3("Les pilotes les plus victorieux"),
+                            _first_places_block(
+                                df, circuit_id, "position", "Victoires",
+                                "Une victoire ici :",
+                            ),
+                        ],
+                        className = "card-column",
+                    ),
+                    html.Div(
+                        [
+                            html.H3("les pilotes les plus souvent partis en 1ère position"),
+                            _first_places_block(
+                                df, circuit_id, "grid", "Poles", "Une pole ici :"
+                            ),
+                        ],
+                        className = "card-column",
+                    ),
+                ],
+                className = "card-columns"
             ),
         ]
     )

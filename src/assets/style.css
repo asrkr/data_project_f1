@@ -131,3 +131,20 @@ footer p {
     background-color: #f5f5f5;
     font-size: 0.85rem;
 }
+
+/* Fiche : deux colonnes */
+.card-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.card-column {
+    min-width: 0;   /* Permet aux graphiques de rétrécir */
+}
+
+@media (max-width: 800px) {
+    .card-columns {
+        grid-template-columns: 1fr;
+    }
+}
