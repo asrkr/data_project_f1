@@ -6,7 +6,7 @@ import dash
 import pandas as pd
 from dash import Input, Output, Patch, callback, dcc, html
 
-from src.components.figures import build_circuit_top, build_circuits_map
+from src.components.figures import build_circuit_top, build_circuits_map, split_first_places
 from src.utils.common_functions import load_cleaned
 
 dash.register_page(__name__, path="/circuits", name="Circuits", order=2)
@@ -81,6 +81,33 @@ def update_map(period: list[int]) -> tuple[Patch, str]:
     return patched, _summary(df, start, end)
 
 
+def _first_places_block(
+    df: pd.DataFrame, circuit_id: str, column: str, label: str, once_text: str
+) -> html.Div:
+    """Barres pour les pilotes classés 1ers au moins 2 fois, étiquettes pour les autres."""
+    regulars, once = split_first_places(df, circuit_id, column)
+    children: list[Any] = []
+    if not regulars.empty:
+        children.append(
+            dcc.Graph(
+                figure = build_circuit_top(regulars, label),
+                config = {"displayModeBar": False},
+            )
+        )
+    if not once.empty:
+        children.append(html.P(once_text, className="tags-title"))
+        children.append(
+            html.Div(
+                [
+                    html.Span(f"{row.driver_name} · {row.years}", className="tag")
+                    for row in once.itertuples()
+                ],
+                className = "tags",
+            )
+        )
+    return html.Div(children)
+
+
 @callback(
     Output("circuits-details", "children"),
     Input("circuits-map", "clickData"),
@@ -104,9 +131,8 @@ def show_circuit(click: dict[str, Any] | None) -> html.Div:
                 f"et {races['season'].max()}."
             ),
             html.H3("Pilotes les plus victorieux sur ce circuit"),
-            dcc.Graph(
-                figure = build_circuit_top(df, circuit_id, "position", "Victoires"),
-                config = {"displayModeBar": False},
+            _first_places_block(
+                df, circuit_id, "position", "Victoires", "Une victoire ici :"
             ),
         ]
     )
