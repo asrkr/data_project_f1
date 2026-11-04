@@ -126,6 +126,18 @@ def split_first_places(
     return regulars, once
 
 
+def pole_win_rate(df: pd.DataFrame, circuit_id: str | None = None) -> float:
+    """Part (%) des victoires obtenues en partant 1er sur la grille.
+    Sans circuit_id, le taux est calculé sur tous les circuits.
+    """
+    wins = df[df["position"] == 1]
+    if circuit_id is not None:
+        wins = wins[wins["circuit_id"] == circuit_id]
+    if wins.empty:
+        return 0.0
+    return round(float((wins["grid"] == 1).mean()) * 100, 1)
+
+
 def build_circuit_top(counts: pd.DataFrame, label: str) -> go.Figure:
     """Barres horizontales des pilotes classés 1ers au moins 2 fois."""
     fig = px.bar(
