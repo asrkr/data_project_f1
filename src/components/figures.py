@@ -93,6 +93,7 @@ def build_circuits_map(df: pd.DataFrame, start: int, end: int) -> go.Figure:
         color_discrete_sequence=["#e10600"],
         opacity=0.6,
         zoom=1,
+        center={"lat": 30, "lon": 10},
         map_style="carto-positron",
         template="plotly_white",
     )
