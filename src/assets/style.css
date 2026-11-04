@@ -93,6 +93,11 @@ footer p {
     height: 70vh;
 }
 
+.map-summary {
+    margin: 16px 0 8px;
+    font-weight: 600;
+}
+
 /* Page Pilotes */
 .winners-checklist {
     margin: 16px 0 8px;
