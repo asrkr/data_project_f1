@@ -42,7 +42,7 @@ def layout(**_kwargs: object) -> html.Div:
                 "Choisis une période avec le curseur : chaque point est un circuit "
                 "qui a accueilli au moins un Grand Prix pendant cette période. "
                 "Plus le point est gros, plus il a accueilli de courses. "
-                "Survole un point pour voir le détail."
+                "Cliquer sur un point pour afficher la fiche du circuit."
             ),
             dcc.RangeSlider(
                 id = "circuits-period",
@@ -141,7 +141,7 @@ def _circuit_figures(df: pd.DataFrame, circuit_id: str) -> dict[str, int | str]:
 def show_circuit(click: dict[str, Any] | None) -> html.Div:
     """Affiche la fiche du circuit cliqué (pour toute son histoire)."""
     if not click:
-        return html.Div(html.P("Clique sur un circuit de la carte."))
+        return html.Div(html.P("Cliquer sur un circuit de la carte."))
     circuit_id = str(click["points"][0]["customdata"][0])
     df = load_cleaned()
     races = df[df["circuit_id"] == circuit_id].drop_duplicates(

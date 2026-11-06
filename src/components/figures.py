@@ -53,53 +53,41 @@ def build_age_histogram(
 
 
 def build_circuits_map(df: pd.DataFrame, start: int, end: int) -> go.Figure:
-    """Carte des circuits sur une période : un point par circuit, taille = nombre de GP."""
+    """Carte des circuits sur une période : un point par circuit, taille = nombre de courses."""
     races = df.drop_duplicates(subset=["season", "round"])
-    races = races.assign(
-        first_season=races.groupby("circuit_id")["season"].transform("min"),
-        last_season=races.groupby("circuit_id")["season"].transform("max"),
-    )
     period = races[races["season"].between(start, end)]
     circuits = period.groupby("circuit_id", as_index=False).agg(
-        circuit_name=("circuit_name", "first"),
-        country=("country", "first"),
-        lat=("lat", "first"),
-        long=("long", "first"),
-        nb_gp=("round", "size"),
-        first_season=("first_season", "first"),
-        last_season=("last_season", "first"),
+        circuit_name = ("circuit_name", "first"),
+        country = ("country", "first"),
+        lat = ("lat", "first"),
+        long = ("long", "first"),
+        nb_gp = ("round", "count"),
     )
     fig = px.scatter_map(
         circuits,
-        lat="lat",
-        lon="long",
-        size="nb_gp",
-        hover_name="circuit_name",
-        custom_data = ["circuit_id"],
-        hover_data={
-            "country": True,
-            "nb_gp": True,
-            "first_season": True,
-            "last_season": True,
-            "lat": False,
-            "long": False,
-        },
-        labels={
-            "country": "Pays",
-            "nb_gp": "Courses sur la période",
-            "first_season": "Première saison",
-            "last_season": "Dernière saison",
-        },
-        size_max=25,
-        color_discrete_sequence=["#e10600"],
-        opacity=0.6,
-        zoom=1,
-        map_style="carto-positron",
-        template="plotly_white",
+        lat = "lat",
+        lon = "long",
+        size = "nb_gp",
+        hover_name = "circuit_name",
+        custom_data = ["circuit_id", "country", "nb_gp"],
+        size_max = 25,
+        color_discrete_sequence = ["#e10600"],
+        opacity = 0.6,
+        zoom = 1,
+        center = {"lat": 30, "lon": 10},
+        map_style = "carto-positron",
+        template = "plotly_white",
+    )
+    fig.update_traces(
+        hovertemplate = (
+            "<b>%{hovertext}</b> (%{customdata[1]})<br>"
+            "%{customdata[2]} course(s) sur la période<br>"
+            "<i>CLiquer pour voir la fiche</i><extra></extra>"
+        )
     )
     fig.update_layout(
-        margin={"l": 0, "r": 0, "t": 0, "b": 0},
-        uirevision="circuits-map",
+        margin = {"l": 0, "r": 0, "t": 0, "b": 0},
+        uirevision = "circuits-map",
     )
     return fig
 
