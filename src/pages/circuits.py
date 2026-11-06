@@ -14,6 +14,7 @@ from src.components.figures import (
 )
 from src.components.key_figures import figure_card
 from src.utils.common_functions import load_cleaned
+from src.utils.countries import country_fr
 
 dash.register_page(__name__, path="/circuits", name="Circuits", order=2)
 
@@ -157,7 +158,7 @@ def show_circuit(click: dict[str, Any] | None, period: list[int]) -> html.Div:
     info = races.iloc[0]
     return html.Div(
         [
-            html.H2(f"{info['circuit_name']} ({info['country']})"),
+            html.H2(f"{info['circuit_name']} ({country_fr(info['country'])})"),
             html.P(f"Chiffres calculés sur la période {start}-{end}."),
             html.Div(
                 [

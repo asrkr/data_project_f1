@@ -4,6 +4,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
+from src.utils.countries import country_fr
+
 AGE_BINS = {"start": 15, "end": 60, "size": 1}
 
 
@@ -63,6 +65,7 @@ def build_circuits_map(df: pd.DataFrame, start: int, end: int) -> go.Figure:
         long = ("long", "first"),
         nb_gp = ("round", "count"),
     )
+    circuits["country"] = circuits["country"].map(country_fr)
     fig = px.scatter_map(
         circuits,
         lat = "lat",
@@ -82,7 +85,7 @@ def build_circuits_map(df: pd.DataFrame, start: int, end: int) -> go.Figure:
         hovertemplate = (
             "<b>%{hovertext}</b> (%{customdata[1]})<br>"
             "%{customdata[2]} course(s) sur la période<br>"
-            "<i>CLiquer pour voir la fiche</i><extra></extra>"
+            "<i>Cliquer pour voir la fiche</i><extra></extra>"
         )
     )
     fig.update_layout(
