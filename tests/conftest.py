@@ -6,6 +6,10 @@ import pandas as pd
 import pytest
 
 import config
+from src.app import create_app
+
+# Les pages appellent dash.register_page à l'import : il faut une app instanciée
+create_app()
 
 
 def _row(

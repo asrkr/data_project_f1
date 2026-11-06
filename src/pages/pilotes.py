@@ -28,7 +28,7 @@ layout = html.Div(
         ),
         dcc.Checklist(
             id = "pilotes-winners",
-            options = [{"label": " Vainquers uniquement", "value": "winners"}],
+            options = [{"label": " Vainqueurs uniquement", "value": "winners"}],
             value = [],
             className = "winners-checklist",
         ),

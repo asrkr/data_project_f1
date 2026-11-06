@@ -1,4 +1,4 @@
-"""Page d'acceuil : présentation du projet et chiffres clés."""
+"""Page d'accueil : présentation du projet et chiffres clés."""
 
 import dash
 from dash import html
@@ -6,7 +6,7 @@ from dash import html
 from src.components.key_figures import figure_card
 from src.utils.common_functions import load_cleaned
 
-# order=0 place l'acceuil en premier dans la barre de navigation
+# order=0 place l'accueil en premier dans la barre de navigation
 dash.register_page(__name__, path="/", name="Accueil", order=0)
 
 
