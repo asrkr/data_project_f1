@@ -137,7 +137,7 @@ def build_circuit_top(counts: pd.DataFrame, label: str) -> go.Figure:
         y = "driver_name",
         orientation = "h",
         custom_data = ["years"],
-        labels = {"counts": label, "driver_name": ""},
+        labels = {"count": label, "driver_name": ""},
         color_discrete_sequence = ["#e10600"],
         template = "plotly_white",
     )
