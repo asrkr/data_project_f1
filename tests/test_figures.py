@@ -4,6 +4,9 @@ import pandas as pd
 import pytest
 
 from src.components.figures import (
+    _years,
+    build_age_histogram,
+    build_circuit_top,
     build_circuits_map,
     pole_win_rate,
     split_first_places,
@@ -112,3 +115,40 @@ def test_figure_card_contains_label_and_value() -> None:
     card = str(figure_card("Grands Prix", 71))
     assert "Grands Prix" in card
     assert "71" in card
+
+
+def test_years_sorted() -> None:
+    assert _years(pd.Series([1957, 1954, 1955])) == "1954, 1955, 1957"
+
+
+@pytest.fixture
+def ages() -> pd.DataFrame:
+    """3 participants, 2 dans les années 50, 2 victoires."""
+    return pd.DataFrame(
+        {
+            "season": [1950, 1951, 1965],
+            "position": [1, 2, 1],
+            "age_at_race": [25.0, 30.5, 40.0]
+        }
+    )
+
+
+def test_age_histogram_overlay_decade_on_history(ages: pd.DataFrame) -> None:
+    fig = build_age_histogram(ages, 1950)
+    assert len(fig.data) == 2
+    assert list(fig.data[0].x) == [25.0, 30.5, 40.0]
+    assert list(fig.data[1].x) == [25.0, 30.5]
+    assert fig.data[1].name == "Années 1950"
+
+
+def test_age_histogram_winners_only(ages: pd.DataFrame) -> None:
+    fig = build_age_histogram(ages, 1960, winners_only=True)
+    assert list(fig.data[0].x) == [25.0, 40.0]
+    assert list(fig.data[1].x) == [40.0]
+
+
+def test_circuit_top_height_and_label(df: pd.DataFrame) -> None:
+    regulars, _ = split_first_places(df, "monaco", "position")
+    fig = build_circuit_top(regulars, "Victoires")
+    assert fig.layout.height == 80 + 30 * len(regulars)
+    assert fig.layout.xaxis.title.text == "Victoires"
