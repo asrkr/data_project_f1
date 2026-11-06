@@ -115,7 +115,7 @@ def _first_places_block(
 
 
 def _circuit_figures(df: pd.DataFrame, circuit_id: str) -> dict[str, int | str]:
-    """Chiffres clés d'un circuit sur toute son histoire."""
+    """Chiffres clés d'un circuit sur les données reçues (déjà filtrées)."""
     circuit = df[df["circuit_id"] == circuit_id]
     races = circuit.drop_duplicates(subset=["season", "round"])
     rate = str(pole_win_rate(df, circuit_id)).replace(".", ",")
@@ -136,21 +136,29 @@ def _circuit_figures(df: pd.DataFrame, circuit_id: str) -> dict[str, int | str]:
 @callback(
     Output("circuits-details", "children"),
     Input("circuits-map", "clickData"),
+    Input("circuits-period", "value"),
     prevent_initial_call = True,
 )
-def show_circuit(click: dict[str, Any] | None) -> html.Div:
-    """Affiche la fiche du circuit cliqué (pour toute son histoire)."""
+def show_circuit(click: dict[str, Any] | None, period: list[int]) -> html.Div:
+    """Affiche la fiche du circuit cliqué, calculée sur la période choisie."""
     if not click:
-        return html.Div(html.P("Cliquer sur un circuit de la carte."))
+        return html.Div("Cliquer sur un circuit de la carte pour afficher sa fiche.")
     circuit_id = str(click["points"][0]["customdata"][0])
+    start, end = period
     df = load_cleaned()
+    df = df[df["season"].between(start, end)]
     races = df[df["circuit_id"] == circuit_id].drop_duplicates(
         subset = ["season", "round"]
     )
+    if races.empty:
+        return html.Div(
+            html.P("Ce circuit n'a pas accueilli de Grand Prix sur la période choisie.")
+        )
     info = races.iloc[0]
     return html.Div(
         [
             html.H2(f"{info['circuit_name']} ({info['country']})"),
+            html.P(f"Chiffres calculés sur la période {start}-{end}."),
             html.Div(
                 [
                     figure_card(label, value)
@@ -172,7 +180,7 @@ def show_circuit(click: dict[str, Any] | None) -> html.Div:
                     ),
                     html.Div(
                         [
-                            html.H3("Les pilotes les plus souvent partis en 1ère position"),
+                            html.H3("Les pilotes les plus souvent partis en 1ère position."),
                             _first_places_block(
                                 df, circuit_id, "grid", "Poles", "Une pole ici :"
                             ),
@@ -180,7 +188,7 @@ def show_circuit(click: dict[str, Any] | None) -> html.Div:
                         className = "card-column",
                     ),
                 ],
-                className = "card-columns"
+                className = "card-columns",
             ),
         ]
     )
