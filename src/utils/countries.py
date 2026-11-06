@@ -1,6 +1,6 @@
 """Traduction en français des noms de pays fournis par l'API (en anglais)."""
 
-# Seuls les pays dont le nom change sont listés : les autres (Canada, France, 
+# Seuls les pays dont le nom change sont listés : les autres (Canada, France,
 # Monaco, Portugal, Qatar) sont renvoyés tels quel par country_fr().
 COUNTRIES_FR: dict[str, str] = {
     "Argentina": "Argentine",
