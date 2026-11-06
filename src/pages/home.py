@@ -21,17 +21,19 @@ def _key_figures() -> dict[str, int]:
     }
 
 
-layout = html.Div(
-    [
-        html.H1("Formule 1 : 75 ans de résultats (1950-2025)"),
-        html.P(
-            "Ce dashboard explore l'histoire du championnat du monde de Formule 1 "
-            "à partir des résultats de chaque Grand Prix : âge des pilotes, "
-            "circuits visités et évolution des saisons."
-        ),
-        html.Div(
-            [figure_card(label, value) for label, value in _key_figures().items()],
-            className = "key-figures",
-        ),
-    ]
-)
+def layout(**_kwargs: object) -> html.Div:
+    """Construit la page d'accueil (appelée par Dash à chaque affichage)."""
+    return html.Div(
+        [
+            html.H1("Formule 1 : 75 ans de résultats (1950-2025)"),
+            html.P(
+                "Ce dashboard explore l'histoire du championnat du monde de Formule 1"
+                "à partir des résultats de chaque Grand Prix : âge des pilotes, "
+                "circuits visités et évolution des saisons."
+            ),
+            html.Div(
+                [figure_card(label, value) for label, value in _key_figures().items()],
+                className = "key-figures",
+            ),
+        ]
+    )
