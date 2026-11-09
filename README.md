@@ -258,10 +258,40 @@ uv run radon cc src config.py -s -a     # complexité cyclomatique
 uv run radon mi src config.py -s        # indice de maintenabilité
 ```
 
-### Ajouter une page ou un graphique
+### Ajouter un graphique à une page existante
 
-*À COMPLÉTER avec la partie dashboard.*
+1. Écrire une fonction `build_xxx(df, ...) -> go.Figure` dans `src/components/figures.py`. Elle reçoit un DataFrame déjà filtré et renvoie une figure plotly avec un titre et des labels d'axes (`labels={...}` ou `update_layout(title=..., xaxis_title=...)`).
+2. Ajouter un test dans `tests/test_figures.py` à partir de la fixture `df` (vérifier le type de figure, le nombre de traces, le titre).
+3. Dans la page, ajouter un `dcc.Graph(id="page-xxx")` dans `layout()` et un callback :
+```python
+@callback(Output("page-xxx", "figure"), Input("page-controle", "value"))
+def update_xxx(value: str) -> go.Figure:
+    df = load_cleaned()
+    return build_xxx(df[df["season"] == int(value)])
+```
 
+### Ajouter une page
+
+1. Créer `src/pages/ma_page.p` :
+
+```python
+import dash
+from dash import html
+
+dash.register_page(__name__, path="/ma-page", name="Ma page", order=4)
+
+
+def layout(**_kwargs: object) -> html.Div:
+    return html.Div([html.H1("Ma page")], className="page")
+```
+`layout` doit être une **fonction** (et non une variable) pour que la base ne soit lue qu'à l'affichage de la page, pas à l'import.
+
+2. Ajouter un test dans `tests/test_pages.py` : vérifier que la page est enregistrée (`dash.page_registry`) et que `layout()` se construit avec le DataFrame de test.
+3. Lancer la vérification complète avant de commiter :
+
+```bash
+uv run ruff check . && uv run pylint src tests config.py main.py && uv run mypy src tests config.py main.py && uv run pytest -q
+```
 
 ## Rapport d'analyse
 
