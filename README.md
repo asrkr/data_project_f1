@@ -99,7 +99,25 @@ Chaque observation correspond au **résultat d'un pilote lors d'un Grand Prix** 
 | Table `raw` | `data/db.sqlite` | Données brutes aplaties, sans modification | Oui |
 | Table `cleaned` | `data/db.sqlite` | Données typées et enrichies, lues par le dashboard | Oui |
 
-**Mécanisme de rafraîchissement** : les saisons terminées sont figées. Seul le cache de la saison la plus récente (`END_YEAR`) expire, au bout de `CACHE_MAX_AGE_DAYS` jours (7 par défaut) : il est alors télécarhgé à nouveau. Ces paramètres se règlent dans `config.py`.
+**Mécanisme de rafraîchissement** : les saisons terminées sont figées. Seul le cache de la saison la plus récente (`END_YEAR`) expire, au bout de `CACHE_MAX_AGE_DAYS` jours (7 par défaut) : il est alors téléchargé à nouveau. Ces paramètres se règlent dans `config.py`.
+
+### Colonnes de la table `cleaned`
+
+| Colonne | Description |
+|---|---|
+| `season`, `round` | Année et numéro de la course dans la saison |
+| `race_date` | Date du Grand Prix |
+| `circuit_id`, `circuit_name`,  `lat`, `long`, `country` | Identifiant, nom, coordonnées et pays du circuit |
+| `driver_id`, `given_name`, `family_name`, `driver_name` | Identifiant, prénom, nom et nom complet du pilote |
+| `date_of_birth`, `age_at_race` | Date de naissance et âge du pilote le jour de la course |
+| `constructor_id`, `team_name`, `team_key` | Identifiant, nom, et clé normalisée de l'écurie |
+| `position`, `position_text`, `grid` | Place à l'arrivée, texte affiché par l'API et place sur la grille de départ |
+| `status`, `points` | Status en fin de course et points marqués |
+
+### Choix de modélisation
+
+- **Pole position** : l'API ne fournit pas directement le poleman. On utilise `grid == 1` (première place sur la grille de départ), ce qui est une approximation : en cas de pénalité, le poleman peut partir plus loin.
+- **Noms de pays** : la base conserve les noms anglais de l'API. La traduction en français (`src/utils/countries.py`) n'est appliquée qu'à l'affichage dans le dashboard.
 
 
 ## Developer Guide
@@ -107,30 +125,48 @@ Chaque observation correspond au **résultat d'un pilote lors d'un Grand Prix** 
 ### Arborescence
 
 ```text
-data_project_f1/
+dataproject/
 ├── data/
-|   ├── db.sqlite                   # base SQLite (tables 'raw' et 'cleaned')
-|   └── raw/                        # cache local JSON par saison (ignoré par git)
+|   ├── db.sqlite                                   # base SQLite (tables 'raw' et 'cleaned')
+|   └── raw/                                        # cache local JSON par saison (ignoré par git)
 ├── src/
 |   ├── __init__.py
-|   ├── components/                 # composants du dashboard
-|   |   └── __init__.py
+|   ├── app.py                                      # create_app() : application Dash multi-pages
+|   ├── assets/                                     # servi automatiquement par Dash
+|   |   ├── style.css                               # feuille de style du dashboard
+|   |   └── geo/
+|   |   |   └── ne_50m_admin_0_countries.geojson    # frontières des pays (Natural Earth)
+|   ├── components/                                 # composants réutilisables
+|   |   ├── __init__.py
+|   |   ├── figures.py                              # construction des graphiques plotly
+|   |   ├── footer.py
+|   |   ├── key_figures.py                          # cartes de chiffres clés
+|   |   └── navbar.py
+|   ├── pages/
+|   |   ├── __init__.py
+|   |   ├── circuits.py                             # carte des circuits et fiche par circuit
+|   |   ├── home.py                                 # accueil et chiffres clés
+|   |   └── pilotes.py                              # histogramme de l'âge des pilotes
 |   └── utils/
-|       ├── __init__.py
-|       ├── clean_data.py           # table 'raw' -> table 'cleaned'
-|       ├── common_functions.py     # fonctions partagées (table_exists, load_cleaned)
-|       └── get_data.py             # API -> cache JSON -> table 'raw'    
+|   |   ├── __init__.py
+|   |   ├── clean_data.py                           # table 'raw' -> table 'cleaned'
+|   |   ├── common_functions.py                     # fonctions partagées (table_exists, load_cleaned)
+|   |   ├── countries.py                            # traduction des noms de pays pour l'affichage
+|   |   └── get_data.py                             # API -> cache JSON -> table 'raw'
 ├── tests/
 |   ├── __init__.py
-|   ├── conftest.py                 # fixtures partagées (base temporaire)
+|   ├── conftest.py                                 # fixtures partagées (app Dash, base temporaire)
 |   ├── test_clean_data.py
 |   ├── test_common_functions.py
-|   └── test_get_data.py
+|   ├── test_figures.py
+|   ├── test_get_data.py
+|   └── test_pages.py
 ├── .gitignore
+├── .mailmap
 ├── .python-version
-├── config.py                       # Configuration centralisée
-├── main.py                         # Point d'entrée
-├── pyproject.toml                  # Dépendances et configuration des outils
+├── config.py                                       # configuration centralisée
+├── main.py                                         # point d'entrée
+├── pyproject.toml                                  # dépendances et configuration des outils
 ├── README.md
 └── uv.lock
 ```
@@ -151,6 +187,23 @@ flowchart TD
     I --> J[(Table cleaned)]
 ```
 
+### Architecture du dashboard
+```mermaid
+flowchart TD
+    M[main.py] -->|construit la base si absente| DB[(data/db.sqlite)]
+    M --> A[create_app : src/app.py]
+    A --> N[navbar + page_container + footer]
+    N --> H[pages/home.py]
+    N --> P[pages/pilotes.py]
+    N --> C[pages/circuits.py]
+    H & P & C -->|load_cleaned| DB
+    P -->|callback| F1[figures.build_age_histogram]
+    C -->|callback| F2[figures.build_circuits_map]
+    C -->|clickData| F3[figures.build_circuit_top]
+```
+
+Chaque page suit le même schéma : `layout()` construit les composants (contrôles + `dcc.Graph`), un callback Dash lit les valeurs des contrôles, filtre le DataFrame et appelle une fonction de `src/components/figures.py` qui renvoie la figure plotluy. Les fonctions de `figures.py` ne dépendent pas de Dash, ce qui permet de les tester directement.
+
 ### Résolution de la filiation des écuries
 
 Une même écurie apparaît sous plusieurs identifiants au fil de son histoire (par exemple Minardi → Toro Rosso → AlphaTauri → RB), alors que certains identifiants désignent des équipes sans aucun lien selon l'époque (Alfa Romeo usine en 1950 et Alfa Romeo-Sauber en 2020). La fonction `resolve_team(constructor_id, season)` de `clean_data.py` applique trois règles dans l'ordre :
@@ -163,7 +216,7 @@ Les écuries qui n'ont qu'un seul identifiant le conservent tel quel.
 
 ### Gestion des limites de l'API (erreurs 429 et pagination)
 
-L'API Jolpica limite les requêtes à 4 par seconde et 500 par heure, et renvoie au maximum 100 résultats par requête. Comme une course compte une vingtaine de résultats (un par pilote), une saison doit être téléchargée en plusieurs pages, et l'historique complet (1950-2025) représente environ 300 requêtes. Au-delà des limites, l'API répond `429 Too Many Requests`. La fonctions `_get_json` et `fetch_season_raw(yer)` de `get_data.py` gère ces contraintes de quatre façons :
+L'API Jolpica limite les requêtes à 4 par seconde et 500 par heure, et renvoie au maximum 100 résultats par requête. Comme une course compte une vingtaine de résultats (un par pilote), une saison doit être téléchargée en plusieurs pages, et l'historique complet (1950-2025) représente environ 300 requêtes. Au-delà des limites, l'API répond `429 Too Many Requests`. Les fonctions `_get_json` et `fetch_season_raw(yer)` de `get_data.py` gèrent ces contraintes de quatre façons :
 
 1. Une pause de `PAUSE = 0.35` secondes entre deux requêtes, pour rester dans la limite de 4 requêtes par seconde.
 2. En cas d'erreur 429, une attente progressive de 15 secondes multipliées par le numéro de la tentative, plafonnée à `MAX_BACKOFF = 60` secondes, avec au plus `MAX_ATTEMPTS = 8` tentatives. 
@@ -183,12 +236,15 @@ uv run pytest -v
 | Fichier | Ce qui est vérifié |
 |---|---|
 | `test_clean_data.py` | Résolution des écuries (renommages, homonymes, châssis-moteur, identifiants inconnus ou absents) et construction complète de la table `cleaned` |
-| `test_common_functions.py` | Détection des tables dans la base SQLite et chargement de la tablea 'cleaned'|
+| `test_common_functions.py` | Détection des tables dans la base SQLite et chargement de la table 'cleaned'|
 | `test_get_data.py` | Aplatissement du JSON, conversion en DataFrame, expiration du cache, lecture du cache sans réseau, nouvelle tentative après un HTTP 429 |
+| `test_figure.py` | Histogramme des âges (filtre décennie et vainqueurs), carte des circuits, séparation poles/victoires, taux pole -> victoire, classements par circuit |
+| `test_pages.py` | Enregistrement des pages, construction des layouts, callbacks appelés comme de simples fonctions (`update_map`, `show_circuit`, `update_age_histogram`) avec un DataFrame de test |
 
 Principes :
 - **Aucun appel réseau** : les réponses de l'API sont simulées avec `monkeypatch`
 - **Aucune modification de la vraie base** : la fixture `tmp_db` (`conftest.py`) redirige `config.DB_PATH` vers une base temporaire, propre à chaque test.
+- **Pas de serveur Dash** : `conftest.py` crée l'application une fois (nécessaire pour `dash.register_page`) et remplace `load_cleaned` par un petit DataFrame via `monkeypatch`. Les callbacks sont testés comme des fonctions Python ordinaires.
 
 ### Qualité du code
 
@@ -202,10 +258,40 @@ uv run radon cc src config.py -s -a     # complexité cyclomatique
 uv run radon mi src config.py -s        # indice de maintenabilité
 ```
 
-### Ajouter une page ou un graphique
+### Ajouter un graphique à une page existante
 
-*À COMPLÉTER avec la partie dashboard.*
+1. Écrire une fonction `build_xxx(df, ...) -> go.Figure` dans `src/components/figures.py`. Elle reçoit un DataFrame déjà filtré et renvoie une figure plotly avec un titre et des labels d'axes (`labels={...}` ou `update_layout(title=..., xaxis_title=...)`).
+2. Ajouter un test dans `tests/test_figures.py` à partir de la fixture `df` (vérifier le type de figure, le nombre de traces, le titre).
+3. Dans la page, ajouter un `dcc.Graph(id="page-xxx")` dans `layout()` et un callback :
+```python
+@callback(Output("page-xxx", "figure"), Input("page-controle", "value"))
+def update_xxx(value: str) -> go.Figure:
+    df = load_cleaned()
+    return build_xxx(df[df["season"] == int(value)])
+```
 
+### Ajouter une page
+
+1. Créer `src/pages/ma_page.p` :
+
+```python
+import dash
+from dash import html
+
+dash.register_page(__name__, path="/ma-page", name="Ma page", order=4)
+
+
+def layout(**_kwargs: object) -> html.Div:
+    return html.Div([html.H1("Ma page")], className="page")
+```
+`layout` doit être une **fonction** (et non une variable) pour que la base ne soit lue qu'à l'affichage de la page, pas à l'import.
+
+2. Ajouter un test dans `tests/test_pages.py` : vérifier que la page est enregistrée (`dash.page_registry`) et que `layout()` se construit avec le DataFrame de test.
+3. Lancer la vérification complète avant de commiter :
+
+```bash
+uv run ruff check . && uv run pylint src tests config.py main.py && uv run mypy src tests config.py main.py && uv run pytest -q
+```
 
 ## Rapport d'analyse
 
@@ -214,7 +300,7 @@ uv run radon mi src config.py -s        # indice de maintenabilité
 
 ## Copyright
 
-Nous déclarons sur l'honneur que le code fourni a été produit par les membres du groupe, à l'exception des éléments listés ci-dessous. Toute ligne non déclarée ci-dessous est réputée avoir été produite par les auteurs du projet.
+Nous déclarons sur l'honneur que le code fourni a été produit par nous-mêmes, éventuellement avec l'aide de l'IA, à l'exception des lignes ci-dessous.
 
 ### Code produit avec l'aide de l'intelligence artificielle
 
@@ -228,6 +314,7 @@ Nous déclarons sur l'honneur que le code fourni a été produit par les membres
 
 1. *Filiation des écuries* : « J'essaie de faire un projet avec l'API Ergast/Jolpica de F1, entre 1950 et 2025. Sauf que j'ai du mal à établir la lignée des équipes, (exemple bête : AlphaTauri -> VCARB mais sans spécifier que c'est la même équipe le modèle pensera que ce sont deux équipes différentes alors que non), du coup je voulais savoir si tu pouvais m'aider à faire la lignée pour chaque équipe entre 1950 et 2025. Tu peux regarder sur internet évidemment, que ce soit pour les lignées et aussi pour les constructorId qu'utilise Ergast/Jolpica. Voici ce que j'ai pour le moment. » (suivi de notre premier dictionnaire `TEAM_LINEAGE`).
 2. *Simulation des données pour les tests unitaires* : « Je suis en train de rédiger les tests unitaires de mes fonctions pour le pipeline de données. Je sais qu'il ne faut pas utiliser la base de données déjà présente et en recréer une nouvelle "exprès" pour les tests, qui sera supprimée ensuite. De plus vu qu'on crééra un fichier exprès pour tester la fonction d'expiration de cache, existe-t-il un moyen de modifier la date d'un fichier pour le faire apparaître plus vieux qu'il ne l'est ? Enfin, je ne pense pas que ce soit une bonne idée de faire de réels appels à l'API en ligne, puisque le projet est de base censé fonctionner sans réseau. Tu pourrais m'aider à mettre en place une "simulation" des appels et réponse de l'API qui tournerait localement afin de tester ma logique face aux erreurs HTTP 429 ? »
+3. *Carte hors-ligne* : « La carte `carto-positron` ne s'affiche pas chez mon binôme et le projet doit fonctionner sans réseau. `scatter_geo` télécharge un fichier depuis cdn.plot.ly. Comment afficher une carte des circuits avec zoom et clic sans aucun appel internet, en gardant `clickData` ? »
 
 ### Bibliothèques et données
 
@@ -235,6 +322,7 @@ Nous déclarons sur l'honneur que le code fourni a été produit par les membres
 - **Outils de développement** (groupe `dev`) : `pytest`, `ruff`, `mypy`, `pylint`, `radon`, `pandas-stubs`, `types-requests`.
 - **Bibliothèque standard** : `argparse`, `contextlib`, `json`, `logging`, `os`, `pathlib`, `re`, `sqlite3`,  `types`, `typing`, `time`
 - **Données** : [API Jolpica F1](https://api.jolpi.ca/ergast/). Les données brutes sont mises en cache dans `data/raw/`.
+- **Frontières des pays** : [Natural Earth](https://naturalearthdata.com/) (1:50m, domaine public), fichier `src/assets/geo/ne_50m_admin_0_countries.geojson` téléchargé depuis le dépôt [nvkelso/natural-earth-vector](https://github.com/nvkelso/natural-earth-vector).
 - **Badges** : générés avec [shields.io](https://shields.io).
 
 Ces bibliothèques sont utilisées comme dépendances. Aucun de leurs fichiers source n'a été copié dans le projet.
