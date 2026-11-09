@@ -13,7 +13,7 @@ from src.pages.circuits import (
     show_circuit,
     update_map,
 )
-from src.pages.home import _key_figures
+from src.pages.home import _key_figures, _page_cards
 
 MONACO_CLICK = {"points": [{"customdata": ["monaco", "Monaco", 3]}]}
 
@@ -132,3 +132,11 @@ def test_home_key_figures(monkeypatch: pytest.MonkeyPatch, df: pd.DataFrame) -> 
         "Pilotes": 2,
         "Circuits": 2,
     }
+
+
+def test_home_page_cards_link_to_other_pages() -> None:
+    """Une vignette par page enregistrée, sauf l'accueil."""
+    cards = _page_cards()
+    hrefs = {card.href for card in cards}
+    assert "/" not in hrefs
+    assert {"/pilotes", "/circuits"} <= hrefs
