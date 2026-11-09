@@ -8,6 +8,10 @@ from src.utils.countries import country_fr
 
 AGE_BINS = {"start": 15, "end": 60, "size": 1}
 
+# Contours des pays (Natural Earth, domaine public) servis par Dash depuis assets/ :
+# La carte fonctionne sans connexion internet
+COUNTRIES_GEOJSON = "assets/geo/ne_50m_admin_0_countries.geojson"
+
 
 def build_age_histogram(
     df: pd.DataFrame, decade: int, winners_only: bool = False
@@ -78,7 +82,7 @@ def build_circuits_map(df: pd.DataFrame, start: int, end: int) -> go.Figure:
         opacity = 0.6,
         zoom = 1,
         center = {"lat": 30, "lon": 10},
-        map_style = "carto-positron",
+        map_style = "white-bg",
         template = "plotly_white",
     )
     fig.update_traces(
@@ -90,7 +94,25 @@ def build_circuits_map(df: pd.DataFrame, start: int, end: int) -> go.Figure:
     )
     fig.update_layout(
         margin = {"l": 0, "r": 0, "t": 0, "b": 0},
+        paper_bgcolor = "#dbe7f0",
         uirevision = "circuits-map",
+        map_layers = [
+            {
+                "sourcetype": "geojson",
+                "source": COUNTRIES_GEOJSON,
+                "type": "fill",
+                "color": "#f4f1ea",
+                "below": "traces",
+            },
+            {
+                "sourcetype": "geojson",
+                "source": COUNTRIES_GEOJSON,
+                "type": "line",
+                "color": "#cfcac0",
+                "line": {"width": 1},
+                "below": "traces",
+            },
+        ],
     )
     return fig
 
