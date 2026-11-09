@@ -187,6 +187,23 @@ flowchart TD
     I --> J[(Table cleaned)]
 ```
 
+### Architecture du dashboard
+```mermaid
+flowchart TD
+    M[main.py] -->|construit la base si absente| DB[(data/db.sqlite)]
+    M --> A[create_app : src/app.py]
+    A --> N[navbar + page_container + footer]
+    N --> H[pages/home.py]
+    N --> P[pages/pilotes.py]
+    N --> C[pages/circuits.py]
+    H & P & C -->|load_cleaned| DB
+    P -->|callback| F1[figures.build_age_histogram]
+    C -->|callback| F2[figures.build_circuits_map]
+    C -->|clickData| F3[figures.build_circuit_top]
+```
+
+Chaque page suit le même schéma : `layout()` construit les composants (contrôles + `dcc.Graph`), un callback Dash lit les valeurs des contrôles, filtre le DataFrame et appelle une fonction de `src/components/figures.py` qui renvoie la figure plotluy. Les fonctions de `figures.py` ne dépendent pas de Dash, ce qui permet de les tester directement.
+
 ### Résolution de la filiation des écuries
 
 Une même écurie apparaît sous plusieurs identifiants au fil de son histoire (par exemple Minardi → Toro Rosso → AlphaTauri → RB), alors que certains identifiants désignent des équipes sans aucun lien selon l'époque (Alfa Romeo usine en 1950 et Alfa Romeo-Sauber en 2020). La fonction `resolve_team(constructor_id, season)` de `clean_data.py` applique trois règles dans l'ordre :
@@ -221,10 +238,13 @@ uv run pytest -v
 | `test_clean_data.py` | Résolution des écuries (renommages, homonymes, châssis-moteur, identifiants inconnus ou absents) et construction complète de la table `cleaned` |
 | `test_common_functions.py` | Détection des tables dans la base SQLite et chargement de la table 'cleaned'|
 | `test_get_data.py` | Aplatissement du JSON, conversion en DataFrame, expiration du cache, lecture du cache sans réseau, nouvelle tentative après un HTTP 429 |
+| `test_figure.py` | Histogramme des âges (filtre décennie et vainqueurs), carte des circuits, séparation poles/victoires, taux pole -> victoire, classements par circuit |
+| `test_pages.py` | Enregistrement des pages, construction des layouts, callbacks appelés comme de simples fonctions (`update_map`, `show_circuit`, `update_age_histogram`) avec un DataFrame de test |
 
 Principes :
 - **Aucun appel réseau** : les réponses de l'API sont simulées avec `monkeypatch`
 - **Aucune modification de la vraie base** : la fixture `tmp_db` (`conftest.py`) redirige `config.DB_PATH` vers une base temporaire, propre à chaque test.
+- **Pas de serveur Dash** : `conftest.py` crée l'application une fois (nécessaire pour `dash.register_page`) et remplace `load_cleaned` par un petit DataFrame via `monkeypatch`. Les callbacks sont testés comme des fonctions Python ordinaires.
 
 ### Qualité du code
 
