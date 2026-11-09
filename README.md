@@ -300,7 +300,7 @@ uv run ruff check . && uv run pylint src tests config.py main.py && uv run mypy 
 
 ## Copyright
 
-Nous déclarons sur l'honneur que le code fourni a été produit par les membres du groupe, à l'exception des éléments listés ci-dessous. Toute ligne non déclarée ci-dessous est réputée avoir été produite par les auteurs du projet.
+Nous déclarons sur l'honneur que le code fourni a été produit par nous-mêmes, éventuellement avec l'aide de l'IA, à l'exception des lignes ci-dessous.
 
 ### Code produit avec l'aide de l'intelligence artificielle
 
@@ -314,6 +314,7 @@ Nous déclarons sur l'honneur que le code fourni a été produit par les membres
 
 1. *Filiation des écuries* : « J'essaie de faire un projet avec l'API Ergast/Jolpica de F1, entre 1950 et 2025. Sauf que j'ai du mal à établir la lignée des équipes, (exemple bête : AlphaTauri -> VCARB mais sans spécifier que c'est la même équipe le modèle pensera que ce sont deux équipes différentes alors que non), du coup je voulais savoir si tu pouvais m'aider à faire la lignée pour chaque équipe entre 1950 et 2025. Tu peux regarder sur internet évidemment, que ce soit pour les lignées et aussi pour les constructorId qu'utilise Ergast/Jolpica. Voici ce que j'ai pour le moment. » (suivi de notre premier dictionnaire `TEAM_LINEAGE`).
 2. *Simulation des données pour les tests unitaires* : « Je suis en train de rédiger les tests unitaires de mes fonctions pour le pipeline de données. Je sais qu'il ne faut pas utiliser la base de données déjà présente et en recréer une nouvelle "exprès" pour les tests, qui sera supprimée ensuite. De plus vu qu'on crééra un fichier exprès pour tester la fonction d'expiration de cache, existe-t-il un moyen de modifier la date d'un fichier pour le faire apparaître plus vieux qu'il ne l'est ? Enfin, je ne pense pas que ce soit une bonne idée de faire de réels appels à l'API en ligne, puisque le projet est de base censé fonctionner sans réseau. Tu pourrais m'aider à mettre en place une "simulation" des appels et réponse de l'API qui tournerait localement afin de tester ma logique face aux erreurs HTTP 429 ? »
+3. *Carte hors-ligne* : « La carte `carto-positron` ne s'affiche pas chez mon binôme et le projet doit fonctionner sans réseau. `scatter_geo` télécharge un fichier depuis cdn.plot.ly. Comment afficher une carte des circuits avec zoom et clic sans aucun appel internet, en gardant `clickData` ? »
 
 ### Bibliothèques et données
 
@@ -321,6 +322,7 @@ Nous déclarons sur l'honneur que le code fourni a été produit par les membres
 - **Outils de développement** (groupe `dev`) : `pytest`, `ruff`, `mypy`, `pylint`, `radon`, `pandas-stubs`, `types-requests`.
 - **Bibliothèque standard** : `argparse`, `contextlib`, `json`, `logging`, `os`, `pathlib`, `re`, `sqlite3`,  `types`, `typing`, `time`
 - **Données** : [API Jolpica F1](https://api.jolpi.ca/ergast/). Les données brutes sont mises en cache dans `data/raw/`.
+- **Frontières des pays** : [Natural Earth](https://naturalearthdata.com/) (1:50m, domaine public), fichier `src/assets/geo/ne_50m_admin_0_countries.geojson` téléchargé depuis le dépôt [nvkelso/natural-earth-vector](https://github.com/nvkelso/natural-earth-vector).
 - **Badges** : générés avec [shields.io](https://shields.io).
 
 Ces bibliothèques sont utilisées comme dépendances. Aucun de leurs fichiers source n'a été copié dans le projet.
