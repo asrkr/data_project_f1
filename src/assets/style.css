@@ -19,7 +19,7 @@ body {
 .navbar a {
     color: #ffffff;
     font-weight: 600;
-    text-decoration: None;
+    text-decoration: none;
 }
 
 .navbar a:hover {
@@ -62,11 +62,6 @@ h1 { font-size: 2rem; margin-top: 0; }
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     margin-top: 20px;
-}
-
-/* Mise en page - footer en bas */
-body {
-    margin: 0;
 }
 
 .app-container {
@@ -168,7 +163,7 @@ footer p {
 
 /* Vignettes de la page d'accueil */
 .page-cards {
-    display: flex;
+    display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 1rem;
     margin: 1rem 0 3rem 0;
@@ -185,7 +180,7 @@ footer p {
     border-radius: 8px;
     padding: 1rem 1.25rem;
     background: #fff;
-    transition: box-shadow 0.15s, transforme 0.15s;
+    transition: box-shadow 0.15s, transform 0.15s;
 }
 
 .page-card:hover {

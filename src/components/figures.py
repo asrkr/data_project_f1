@@ -203,6 +203,7 @@ def build_team_wins(df: pd.DataFrame, top: int = 10) -> go.Figure:
         orientation = "h",
         title = f"Top {top} des écuries par victoires en Grand Prix (1950-2025)",
         labels = {"wins": "Victoires", "team": "Écurie"},
+        color_discrete_sequence = ["#e10600"],
     )
     fig.update_layout(margin={"l": 0, "r": 0, "t": 0, "b": 0})
     return fig
