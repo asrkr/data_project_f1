@@ -125,30 +125,48 @@ Chaque observation correspond au **résultat d'un pilote lors d'un Grand Prix** 
 ### Arborescence
 
 ```text
-data_project_f1/
+dataproject/
 ├── data/
-|   ├── db.sqlite                   # base SQLite (tables 'raw' et 'cleaned')
-|   └── raw/                        # cache local JSON par saison (ignoré par git)
+|   ├── db.sqlite                                   # base SQLite (tables 'raw' et 'cleaned')
+|   └── raw/                                        # cache local JSON par saison (ignoré par git)
 ├── src/
 |   ├── __init__.py
-|   ├── components/                 # composants du dashboard
-|   |   └── __init__.py
+|   ├── app.py                                      # create_app() : application Dash multi-pages
+|   ├── assets/                                     # servi automatiquement par Dash
+|   |   ├── style.css                               # feuille de style du dashboard
+|   |   └── geo/
+|   |   |   └── ne_50m_admin_0_countries.geojson    # frontières des pays (Natural Earth)
+|   ├── components/                                 # composants réutilisables
+|   |   ├── __init__.py
+|   |   ├── figures.py                              # construction des graphiques plotly
+|   |   ├── footer.py
+|   |   ├── key_figures.py                          # cartes de chiffres clés
+|   |   └── navbar.py
+|   ├── pages/
+|   |   ├── __init__.py
+|   |   ├── circuits.py                             # carte des circuits et fiche par circuit
+|   |   ├── home.py                                 # accueil et chiffres clés
+|   |   └── pilotes.py                              # histogramme de l'âge des pilotes
 |   └── utils/
-|       ├── __init__.py
-|       ├── clean_data.py           # table 'raw' -> table 'cleaned'
-|       ├── common_functions.py     # fonctions partagées (table_exists, load_cleaned)
-|       └── get_data.py             # API -> cache JSON -> table 'raw'    
+|   |   ├── __init__.py
+|   |   ├── clean_data.py                           # table 'raw' -> table 'cleaned'
+|   |   ├── common_functions.py                     # fonctions partagées (table_exists, load_cleaned)
+|   |   ├── countries.py                            # traduction des noms de pays pour l'affichage
+|   |   └── get_data.py                             # API -> cache JSON -> table 'raw'
 ├── tests/
 |   ├── __init__.py
-|   ├── conftest.py                 # fixtures partagées (base temporaire)
+|   ├── conftest.py                                 # fixtures partagées (app Dash, base temporaire)
 |   ├── test_clean_data.py
 |   ├── test_common_functions.py
-|   └── test_get_data.py
+|   ├── test_figures.py
+|   ├── test_get_data.py
+|   └── test_pages.py
 ├── .gitignore
+├── .mailmap
 ├── .python-version
-├── config.py                       # Configuration centralisée
-├── main.py                         # Point d'entrée
-├── pyproject.toml                  # Dépendances et configuration des outils
+├── config.py                                       # configuration centralisée
+├── main.py                                         # point d'entrée
+├── pyproject.toml                                  # dépendances et configuration des outils
 ├── README.md
 └── uv.lock
 ```
@@ -181,7 +199,7 @@ Les écuries qui n'ont qu'un seul identifiant le conservent tel quel.
 
 ### Gestion des limites de l'API (erreurs 429 et pagination)
 
-L'API Jolpica limite les requêtes à 4 par seconde et 500 par heure, et renvoie au maximum 100 résultats par requête. Comme une course compte une vingtaine de résultats (un par pilote), une saison doit être téléchargée en plusieurs pages, et l'historique complet (1950-2025) représente environ 300 requêtes. Au-delà des limites, l'API répond `429 Too Many Requests`. La fonctions `_get_json` et `fetch_season_raw(yer)` de `get_data.py` gère ces contraintes de quatre façons :
+L'API Jolpica limite les requêtes à 4 par seconde et 500 par heure, et renvoie au maximum 100 résultats par requête. Comme une course compte une vingtaine de résultats (un par pilote), une saison doit être téléchargée en plusieurs pages, et l'historique complet (1950-2025) représente environ 300 requêtes. Au-delà des limites, l'API répond `429 Too Many Requests`. Les fonctions `_get_json` et `fetch_season_raw(yer)` de `get_data.py` gèrent ces contraintes de quatre façons :
 
 1. Une pause de `PAUSE = 0.35` secondes entre deux requêtes, pour rester dans la limite de 4 requêtes par seconde.
 2. En cas d'erreur 429, une attente progressive de 15 secondes multipliées par le numéro de la tentative, plafonnée à `MAX_BACKOFF = 60` secondes, avec au plus `MAX_ATTEMPTS = 8` tentatives. 
@@ -201,7 +219,7 @@ uv run pytest -v
 | Fichier | Ce qui est vérifié |
 |---|---|
 | `test_clean_data.py` | Résolution des écuries (renommages, homonymes, châssis-moteur, identifiants inconnus ou absents) et construction complète de la table `cleaned` |
-| `test_common_functions.py` | Détection des tables dans la base SQLite et chargement de la tablea 'cleaned'|
+| `test_common_functions.py` | Détection des tables dans la base SQLite et chargement de la table 'cleaned'|
 | `test_get_data.py` | Aplatissement du JSON, conversion en DataFrame, expiration du cache, lecture du cache sans réseau, nouvelle tentative après un HTTP 429 |
 
 Principes :
