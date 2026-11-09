@@ -26,8 +26,8 @@ Ce projet propose une infrastructure d'analyse historique de la Formule 1 de 195
 
 1. Cloner le dépôt public :
 ```bash
-git clone https://git.esiee.fr/sarkara/data_project_f1.git
-cd data_project_f1
+git clone https://git.esiee.fr/sarkara/dataproject.git
+cd dataproject
 ```
 
 2. Installer l'environnement et les dépendances exactes :
@@ -35,28 +35,36 @@ cd data_project_f1
 uv sync
 ```
 
+`uv sync`installe aussi les outils de développement (tests, linters). Pour n'installer que ce qui est nécessaire à l'exécution : `uv sync --no-dev`.
+
 3. Lancer le dashboard :
 ```bash
-uv run python main.py
+uv run main.py
 ```
 
-Le dashboard est ensuite accessible dans un navigateur à l'adresse `http://127.0.0.1:8050`.
+Le dashboard est ensuite accessible dans un navigateur à l'adresse [`http://127.0.0.1:8050`](http://127.0.0.1:8050).
 
-La base `data/db.sqlite` est fournie dans le dépôt : **le dashboard démarre sans connexion internet**, aucun téléchargement n'est effectué au premier lancement.
+La base `data/db.sqlite` est fournie dans le dépôt : **le dashboard fonctionne entièrement sans connexion internet**. Aucun téléchargement n'est effectué au premier lancement.
+
+### Les pages
+
+| Page | Contenu | Interactions |
+|---|---|---|
+| **Accueil** | Présentation du projet et chiffres clés (saisons, Grands Prix, pilotes, circuits) | Navigation vers les autres pages |
+| **Âge des pilotes** | Histogrammme de l'âge des pilotes au départ de chaque course : la décennie choisie (rouge) superposée à toute l'histoire (gris) | Onglets par décénnie, case « Vainqueurs uniquement » |
+| **Circuits** | Carte des circuits, taille des points proportionnelle au nombre de courses | Curseur de période (le zoom est conservé), survol d'un point, clic pour afficher la fiche du circuit : chiffres clés, taux pole -> victoire comparé à la moyenne en F1, vainqueurs et polemen, tous calculés sur la période choisie |
 
 ### Reconstruction des données (optionnel)
 
 Pour régénérer la base à partir de l'API (connexion internet requise) :
 ```bash
-uv run python -m src.utils.get_data         # téléchargement -> data/raw/ + table 'raw'
-uv run python -m src.utils.clean_data       # nettoyage -> table 'cleaned'
+uv run main.py --refresh
 ```
-
-Le script de téléchargement respecte les limites de l'API (pause entre les requêtes et nouvelle tentetive en cas de refus HTTP 429).
+Seules les saisons absentes du cache `data/raw/` ou périmées (voir la seection Data) sont téléchargées, puis les tables `raw` et `cleaned` sont reconstruites. Le script respecte les limites de l'API (pause entre les requêtes et nouvelle tentative en cas de refus HTTP 429).
 
 ### Démonstration vidéo
 
-*(À venir - la vidéo de démonstration sera ajoutée à la fin du développement)*.
+*(À venir - le lien YouTube sera ajouté à la fin du développement.)*
 
 
 ## Data
