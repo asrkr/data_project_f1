@@ -21,6 +21,9 @@ def _row(
         "silverstone": ("Silverstone Circuit", "UK", 52.07, -1.02),
     }
     name, country, lat, long = circuits[circuit_id]
+    team_key, team_name = (
+        ("alfa", "Alfa Romeo") if driver == "Juan Fangio" else ("ferrari", "Ferrari")
+    )
     return {
         "season": season,
         "round": 1,
@@ -30,6 +33,8 @@ def _row(
         "lat": lat,
         "long": long,
         "driver_name": driver,
+        "team_key": team_key,
+        "team_name": team_name,
         "position": position,
         "grid": grid,
     }

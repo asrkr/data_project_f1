@@ -176,3 +176,33 @@ def build_circuit_top(counts: pd.DataFrame, label: str) -> go.Figure:
         height = 80 + 30 * len(counts),
     )
     return fig
+
+
+def build_team_wins(df: pd.DataFrame, top: int = 10) -> go.Figure:
+    """Barres horizontales des écuries les plus victorieuses, regroupées
+    par team_key."""
+    wins = df[df["position"] == 1]
+    labels = (
+        wins.sort_values("season")
+        .groupby("team_key")["team_name"]
+        .last()
+    )
+    counts = (
+        wins.groupby("team_key")
+        .size()
+        .rename("wins")
+        .reset_index()
+        .nlargest(top, "wins")
+        .sort_values("wins")
+    )
+    counts["team"] = counts["team_key"].map(labels)
+    fig = px.bar(
+        counts,
+        x = "wins",
+        y = "team",
+        orientation = "h",
+        title = f"Top {top} des écuries par victoires en Grand Prix (1950-2025)",
+        labels = {"wins": "Victoires", "team": "Écurie"},
+    )
+    fig.update_layout(margin={"l": 0, "r": 0, "t": 0, "b": 0})
+    return fig
