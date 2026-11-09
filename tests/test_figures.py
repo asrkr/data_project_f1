@@ -109,6 +109,12 @@ def test_age_histogram_winners_only(ages: pd.DataFrame) -> None:
     assert list(fig.data[1].x) == [40.0]
 
 
+def test_age_histogram_has_title(ages: pd.DataFrame) -> None:
+    """La figure porte un titre mentionnant la décennie."""
+    fig = build_age_histogram(ages, 1950, False)
+    assert "1950" in fig.layout.title.text
+
+
 def test_circuit_top_height_and_label(df: pd.DataFrame) -> None:
     """Hauteur proportionnelle au nombre de pilotes, axe nommé."""
     regulars, _ = split_first_places(df, "monaco", "position")

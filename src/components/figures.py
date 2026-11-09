@@ -48,12 +48,17 @@ def build_age_histogram(
         )
     )
     fig.update_layout(
-        barmode="overlay",
-        template="plotly_white",
-        xaxis_title="Âge au départ de la course (ans)",
-        yaxis_title="Part des participations (%)",
-        legend={"orientation": "h", "y": 1.1},
-        margin={"l": 40, "r": 20, "t": 40, "b": 40},
+        barmode = "overlay",
+        template = "plotly_white",
+        title = (
+            f"Âge des pilotes dans les années {decade} "
+            f"({'vainqueurs' if winners_only else 'tous les partants'}) "
+            "comparé à 1950-2025"
+        ),
+        xaxis_title = "Âge au départ de la course (ans)",
+        yaxis_title = "Part des participations (%)",
+        legend = {"x": 0.99, "y": 0.99, "xanchor": "right", "yanchor": "top"},
+        margin = {"l": 40, "r": 20, "t": 60, "b": 40},
     )
     return fig
 
