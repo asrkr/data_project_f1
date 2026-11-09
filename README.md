@@ -54,6 +54,11 @@ La base `data/db.sqlite` est fournie dans le dépôt : **le dashboard fonctionne
 | **Âge des pilotes** | Histogrammme de l'âge des pilotes au départ de chaque course : la décennie choisie (rouge) superposée à toute l'histoire (gris) | Onglets par décénnie, case « Vainqueurs uniquement » |
 | **Circuits** | Carte des circuits, taille des points proportionnelle au nombre de courses | Curseur de période (le zoom est conservé), survol d'un point, clic pour afficher la fiche du circuit : chiffres clés, taux pole -> victoire comparé à la moyenne en F1, vainqueurs et polemen, tous calculés sur la période choisie |
 
+![Page d'accueil](images/accueil.png)
+![Âge des pilotes](images/pilotes.png)
+![Carte des circuits](images/circuits.png)
+![Fiche d'un circuit](images/circuit_fiche.png)
+
 ### Reconstruction des données (optionnel)
 
 Pour régénérer la base à partir de l'API (connexion internet requise) :
@@ -202,7 +207,7 @@ flowchart TD
     C -->|clickData| F3[figures.build_circuit_top]
 ```
 
-Chaque page suit le même schéma : `layout()` construit les composants (contrôles + `dcc.Graph`), un callback Dash lit les valeurs des contrôles, filtre le DataFrame et appelle une fonction de `src/components/figures.py` qui renvoie la figure plotluy. Les fonctions de `figures.py` ne dépendent pas de Dash, ce qui permet de les tester directement.
+Chaque page suit le même schéma : `layout()` construit les composants (contrôles + `dcc.Graph`), un callback Dash lit les valeurs des contrôles, filtre le DataFrame et appelle une fonction de `src/components/figures.py` qui renvoie la figure plotluy. Les fonctions de `figures.py` ne dépendent pas de Dash, ce qui permet de les tester directement. Les callbacks sont définis dans chaque page (architecture multi-pages de Dash, `use_pages=True`). Seul le callback de la barre de navigation (lien actif) vit dans `src/components/navbar.py`.
 
 ### Résolution de la filiation des écuries
 

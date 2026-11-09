@@ -38,7 +38,7 @@ def layout(**_kwargs: object) -> html.Div:
     marks[last] = str(last)
     return html.Div(
         [
-            html.H1("Les circuits de Formule 1."),
+            html.H1("Les circuits de Formule 1"),
             html.P(
                 "Choisis une période avec le curseur : chaque point est un circuit "
                 "qui a accueilli au moins un Grand Prix pendant cette période. "
@@ -181,7 +181,7 @@ def show_circuit(click: dict[str, Any] | None, period: list[int]) -> html.Div:
                     ),
                     html.Div(
                         [
-                            html.H3("Les pilotes les plus souvent partis en 1ère position."),
+                            html.H3("Les pilotes les plus souvent partis en 1ère position"),
                             _first_places_block(
                                 df, circuit_id, "grid", "Poles", "Une pole ici :"
                             ),
