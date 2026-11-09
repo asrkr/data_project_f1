@@ -99,7 +99,25 @@ Chaque observation correspond au **résultat d'un pilote lors d'un Grand Prix** 
 | Table `raw` | `data/db.sqlite` | Données brutes aplaties, sans modification | Oui |
 | Table `cleaned` | `data/db.sqlite` | Données typées et enrichies, lues par le dashboard | Oui |
 
-**Mécanisme de rafraîchissement** : les saisons terminées sont figées. Seul le cache de la saison la plus récente (`END_YEAR`) expire, au bout de `CACHE_MAX_AGE_DAYS` jours (7 par défaut) : il est alors télécarhgé à nouveau. Ces paramètres se règlent dans `config.py`.
+**Mécanisme de rafraîchissement** : les saisons terminées sont figées. Seul le cache de la saison la plus récente (`END_YEAR`) expire, au bout de `CACHE_MAX_AGE_DAYS` jours (7 par défaut) : il est alors téléchargé à nouveau. Ces paramètres se règlent dans `config.py`.
+
+### Colonnes de la table `cleaned`
+
+| Colonne | Description |
+|---|---|
+| `season`, `round` | Année et numéro de la course dans la saison |
+| `race_date` | Date du Grand Prix |
+| `circuit_id`, `circuit_name`,  `lat`, `long`, `country` | Identifiant, nom, coordonnées et pays du circuit |
+| `driver_id`, `given_name`, `family_name`, `driver_name` | Identifiant, prénom, nom et nom complet du pilote |
+| `date_of_birth`, `age_at_race` | Date de naissance et âge du pilote le jour de la course |
+| `constructor_id`, `team_name`, `team_key` | Identifiant, nom, et clé normalisée de l'écurie |
+| `position`, `position_text`, `grid` | Place à l'arrivée, texte affiché par l'API et place sur la grille de départ |
+| `status`, `points` | Status en fin de course et points marqués |
+
+### Choix de modélisation
+
+- **Pole position** : l'API ne fournit pas directement le poleman. On utilise `grid == 1` (première place sur la grille de départ), ce qui est une approximation : en cas de pénalité, le poleman peut partir plus loin.
+- **Noms de pays** : la base conserve les noms anglais de l'API. La traduction en français (`src/utils/countries.py`) n'est appliquée qu'à l'affichage dans le dashboard.
 
 
 ## Developer Guide
