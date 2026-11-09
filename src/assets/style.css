@@ -165,3 +165,39 @@ footer p {
 .circuit-card .key-figure h2 {
     font-size: 1.5rem;
 }
+
+/* Vignettes de la page d'accueil */
+.page-cards {
+    display: flex;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0 3rem 0;
+}
+
+.page-cards a {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.page-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    background: #fff;
+    transition: box-shadow 0.15s, transforme 0.15s;
+}
+
+.page-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+.page-card h3 {
+    margin: 0 0 0.5rem 0;
+}
+
+.page-card p {
+    margin: 0;
+    color: #555;
+}
