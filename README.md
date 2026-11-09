@@ -202,7 +202,7 @@ flowchart TD
     C -->|clickData| F3[figures.build_circuit_top]
 ```
 
-Chaque page suit le même schéma : `layout()` construit les composants (contrôles + `dcc.Graph`), un callback Dash lit les valeurs des contrôles, filtre le DataFrame et appelle une fonction de `src/components/figures.py` qui renvoie la figure plotluy. Les fonctions de `figures.py` ne dépendent pas de Dash, ce qui permet de les tester directement.
+Chaque page suit le même schéma : `layout()` construit les composants (contrôles + `dcc.Graph`), un callback Dash lit les valeurs des contrôles, filtre le DataFrame et appelle une fonction de `src/components/figures.py` qui renvoie la figure plotluy. Les fonctions de `figures.py` ne dépendent pas de Dash, ce qui permet de les tester directement. Les callbacks sont définis dans chaque page (architecture multi-pages de Dash, `use_pages=True`). Seul le callback de la barre de navigation (lien actif) vit dans `src/components/navbar.py`.
 
 ### Résolution de la filiation des écuries
 
