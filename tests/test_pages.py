@@ -137,6 +137,6 @@ def test_home_key_figures(monkeypatch: pytest.MonkeyPatch, df: pd.DataFrame) -> 
 def test_home_page_cards_link_to_other_pages() -> None:
     """Une vignette par page enregistrée, sauf l'accueil."""
     cards = _page_cards()
-    hrefs = {card.href for card in cards}
+    hrefs = {card.to_plotly_json()["props"]["href"] for card in cards}
     assert "/" not in hrefs
     assert {"/pilotes", "/circuits"} <= hrefs
