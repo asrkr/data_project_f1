@@ -7,6 +7,7 @@ from src.components.figures import (
     build_age_histogram,
     build_circuit_top,
     build_circuits_map,
+    build_team_wins,
     pole_win_rate,
     split_first_places,
 )
@@ -114,3 +115,18 @@ def test_circuit_top_height_and_label(df: pd.DataFrame) -> None:
     fig = build_circuit_top(regulars, "Victoires")
     assert fig.layout.height == 80 + 30 * len(regulars)
     assert fig.layout.xaxis.title.text == "Victoires"
+
+
+def test_build_team_wins_counts_by_team_key(df: pd.DataFrame) -> None:
+    """Le graphique compte une victoire par Grand Prix, regroupée par team_key."""
+    fig = build_team_wins(df)
+    assert "Top 10" in fig.layout.title.text
+    assert fig.layout.xaxis.title.text == "Victoires"
+    assert fig.layout.yaxis.title.text == "Écurie"
+    assert fig.data[0].x.sum() == int((df["position"] ==1).sum())
+
+
+def test_build_team_wins_respects_top(df: pd.DataFrame) -> None:
+    """Le paramètre top limite le nombre de barres."""
+    fig = build_team_wins(df, top=1)
+    assert len(fig.data[0].y) == 1
